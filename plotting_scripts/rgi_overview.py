@@ -11,23 +11,12 @@ import geopandas as gpd
 from collections import OrderedDict
 from matplotlib import rcParams
 
-def read_rgi_ids_from_csv(file_path):
-    """
-    Function to read a csv file and get the glaciers ID's in that dataframe
-    """
-    data = pd.read_csv(file_path)
-    rgi_ids = data.RGIId.values
+MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 
-    return rgi_ids
-
-def calculate_study_area(ids, geo_df):
-    """ Calculates the area for a selection of ids in a shapefile
-    """
-    keep_ids = [(i in ids) for i in geo_df.RGIId]
-    rgi_ids = geo_df.iloc[keep_ids]
-    area_sel = rgi_ids.Area.sum()
-
-    return area_sel
+import sys
+sys.path.append(MAIN_PATH)
+# velocity module
+from velocity_tools import utils_velocity as utils_vel
 
 # PARAMS for plots
 rcParams['axes.labelsize'] = 25
@@ -38,8 +27,6 @@ rcParams['ytick.labelsize'] = 25
 sns.set_context('poster')
 
 #Paths to data
-
-MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 plot_path = os.path.join(MAIN_PATH, 'plots/')
 
 # Data input
@@ -122,16 +109,16 @@ no_racmo_data = os.path.join(full_exp_dir[2],
 no_solution =  os.path.join(full_exp_dir[2],
                             'glaciers_with_no_solution.csv')
 
-prepro_ids = read_rgi_ids_from_csv(prepro_erros)
-no_vel_ids = read_rgi_ids_from_csv(no_vel_data)
-no_racmo_ids = read_rgi_ids_from_csv(no_racmo_data)
-no_sol_ids = read_rgi_ids_from_csv(no_solution)
+prepro_ids = utils_vel.read_rgi_ids_from_csv(prepro_erros)
+no_vel_ids = utils_vel.read_rgi_ids_from_csv(no_vel_data)
+no_racmo_ids = utils_vel.read_rgi_ids_from_csv(no_racmo_data)
+no_sol_ids = utils_vel.read_rgi_ids_from_csv(no_solution)
 
 # Calculate study area precentage per error category
-area_prepro = calculate_study_area(prepro_ids, sub_no_conect)
-area_no_vel = calculate_study_area(no_vel_ids, sub_no_conect)
-area_no_racmo = calculate_study_area(no_racmo_ids, sub_no_conect)
-area_no_solution = calculate_study_area(no_sol_ids, sub_no_conect)
+area_prepro = utils_vel.calculate_study_area(prepro_ids, sub_no_conect)
+area_no_vel = utils_vel.calculate_study_area(no_vel_ids, sub_no_conect)
+area_no_racmo = utils_vel.calculate_study_area(no_racmo_ids, sub_no_conect)
+area_no_solution = utils_vel.calculate_study_area(no_sol_ids, sub_no_conect)
 
 study_area = sub_no_conect.Area.sum()
 

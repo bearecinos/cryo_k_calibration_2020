@@ -2,3 +2,5 @@
 /output_data
 /plots
 /.idea
+__pycache__/
+*.py[cod]

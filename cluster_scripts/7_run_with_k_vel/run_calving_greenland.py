@@ -96,12 +96,31 @@ ids = de.RGIId.values
 keep_errors = [(i not in ids) for i in rgidf.RGIId]
 rgidf = rgidf.iloc[keep_errors]
 
-# no_solution = os.path.join(MAIN_PATH,
-#             'output_data/3_calibration_results/glaciers_with_no_solution.csv')
-# d_no_sol = pd.read_csv(no_solution)
-# ids_rgi = d_no_sol.RGIId.values
-# keep_no_solution = [(i not in ids_rgi) for i in rgidf.RGIId]
-# rgidf = rgidf.iloc[keep_no_solution]
+no_solution = os.path.join(OUTPUT_DATA,
+                           'glaciers_with_no_solution.csv')
+d_no_sol = pd.read_csv(no_solution)
+ids_rgi = d_no_sol.RGIId.values
+keep_no_solution = [(i not in ids_rgi) for i in rgidf.RGIId]
+rgidf = rgidf.iloc[keep_no_solution]
+
+no_vel_data = os.path.join(OUTPUT_DATA,
+                           'glaciers_with_no_vel_data.csv')
+d_no_data = pd.read_csv(no_vel_data)
+ids_no_data = d_no_data.RGIId.values
+keep_no_data = [(i not in ids_no_data) for i in rgidf.RGIId]
+rgidf = rgidf.iloc[keep_no_data]
+
+calibration_results = os.path.join(OUTPUT_DATA,
+                'k_calibration_velandmu_reltol.csv')
+
+dc = pd.read_csv(calibration_results)
+
+index_vel = np.where(dc['method'] == 'calibrated with mu_star')
+ids_mu_star = dc.loc[index_vel].RGIId.values
+
+keep_no_mu_star = [(i not in ids_mu_star) for i in rgidf.RGIId]
+rgidf = rgidf.iloc[keep_no_mu_star]
+
 
 # Sort for more efficient parallel computing
 rgidf = rgidf.sort_values('Area', ascending=False)
@@ -144,32 +163,17 @@ m, s = divmod(time.time() - start, 60)
 h, m = divmod(m, 60)
 log.info("OGGM is done! Time needed: %02d:%02d:%02d" % (h, m, s))
 
-calibration_results = os.path.join(OUTPUT_DATA,
-                'k_calibration_velandmu_reltol.csv')
-
 dc = pd.read_csv(calibration_results, index_col='RGIId')
-
-files_no_k_value = []
 
 # Compute a calving flux
 for gdir in gdirs:
     sel = dc[dc.index == gdir.rgi_id]
     k_value = sel.k_value.values
 
-    if (np.isnan(k_value).any() or k_value.size == 0):
-        print(gdir.rgi_id, ' this glacier has no k-value')
-        files_no_k_value = np.append(files_no_k_value, gdir.rgi_id)
-    else:
-        cfg.PARAMS['k_calving'] = float(k_value)
-        out = inversion.find_inversion_calving(gdir)
-        if out is None:
-            continue
-
-
-s = {'RGIId': files_no_k_value}
-ds = pd.DataFrame(data=s)
-ds.to_csv(os.path.join(cfg.PATHS['working_dir'],
-                       'glaciers_with_no_k_value.csv'))
+    cfg.PARAMS['k_calving'] = float(k_value)
+    out = inversion.find_inversion_calving(gdir)
+    if out is None:
+        continue
 
 # Compile output
 file_suffix = '_greenland_calving_with_sliding_k_vel_calibrated'

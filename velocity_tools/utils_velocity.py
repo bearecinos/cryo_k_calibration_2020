@@ -138,6 +138,24 @@ def find_flowline_elevation_threshold_index(gdir, ele):
 
     return np.asarray(fl_no), np.asarray(elem_index)
 
+def read_rgi_ids_from_csv(file_path):
+    """
+    Function to read a csv file and get the glaciers ID's in that dataframe
+    """
+    data = pd.read_csv(file_path)
+    rgi_ids = data.RGIId.values
+
+    return rgi_ids
+
+
+def calculate_study_area(ids, geo_df):
+    """ Calculates the area for a selection of ids in a shapefile
+    """
+    keep_ids = [(i in ids) for i in geo_df.RGIId]
+    rgi_ids = geo_df.iloc[keep_ids]
+    area_sel = rgi_ids.Area.sum()
+
+    return area_sel
 
 def velocity_average_from_elevation(gdir, ele, filesuffix=''):
     """ Calculates the average velocity along the main flowline
