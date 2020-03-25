@@ -7,6 +7,7 @@ import rasterio
 import pyproj
 import matplotlib.pyplot as plt
 from matplotlib.offsetbox import AnchoredText
+from matplotlib import rcParams
 import seaborn as sns
 import pandas as pd
 os.getcwd()
@@ -15,9 +16,13 @@ from collections import OrderedDict
 
 from oggm import workflow, cfg, utils
 
+# rcParams['axes.labelsize'] = 20
+# rcParams['xtick.labelsize'] = 20
+# rcParams['ytick.labelsize'] = 20
+
 
 #Paths to data
-MAIN_PATH = os.path.expanduser('~/k_calibration/')
+MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 
 plot_path = os.path.join(MAIN_PATH, 'plots/')
 
@@ -35,7 +40,7 @@ filename_coastline = os.path.join(MAIN_PATH,
                         'input_data/ne_10m_coastline/ne_10m_coastline.shp')
 
 vel_file = os.path.join(MAIN_PATH,
-                        'input_data/velocity_tiff/vel_total.tif')
+                'input_data/velocity_tiff/greenland_vel_mosaic250_vv_v1.tif')
 
 # OGGM Run
 
@@ -118,52 +123,49 @@ dve_sel = dvel.salem.subset(grid=gdir.grid, margin=2)
 
 sub_mar = shape_cap.loc[shape_cap['TermType']=='1']
 
+import matplotlib.gridspec as gridspec
 
 # Plotting
-f, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 10))
+fig2 = plt.figure(figsize=(14, 12), constrained_layout=False)
 
+spec = gridspec.GridSpec(1, 3, wspace=0.3)
+
+ax0 = plt.subplot(spec[0])
 sm = ds_geo_sel.salem.get_map(countries=False);
 sm.set_shapefile(gdir.read_shapefile('outlines'), color='black')
 #sm.set_shapefile(shp, color='r')
 sm.set_data(ds_geo_sel.Topography)
 sm.set_cmap('topo')
 sm.set_scale_bar()
-sm.visualize(ax=ax1, cbar_title='m. above s.l.');
-at = AnchoredText('a', prop=dict(size=20), frameon=True, loc=2)
-ax1.add_artist(at)
+sm.set_lonlat_contours(interval=1.5)
+sm.visualize(ax=ax0, cbar_title='m. above s.l.');
+at = AnchoredText('a', prop=dict(size=16), frameon=True, loc=1)
+ax0.add_artist(at)
 
+ax1 = plt.subplot(spec[1])
 sm = ds_geo_sel.salem.get_map(countries=False);
 sm.set_shapefile(shape_cap, color='black')
 #sm.set_shapefile(shp, color='r')
 sm.set_data(ds_geo_sel.Topography)
 sm.set_cmap('topo')
 sm.set_scale_bar()
-sm.visualize(ax=ax2, cbar_title='m. above s.l.')
-at = AnchoredText('b', prop=dict(size=20), frameon=True, loc=2)
-ax2.add_artist(at)
+sm.set_lonlat_contours(interval=1.5)
+sm.visualize(ax=ax1, cbar_title='m. above s.l.')
+at = AnchoredText('b', prop=dict(size=16), frameon=True, loc=2)
+ax1.add_artist(at)
 
-
+ax2 = plt.subplot(spec[2])
 sm = dve_sel.salem.get_map(countries=False);
 sm.set_shapefile(shape_cap, color='black')
-#sm.set_shapefile(shp, color='r')
-sm.set_data(dve_sel.data)
-sm.set_cmap(cmap)
-sm.set_scale_bar()
-sm.visualize(ax=ax3, cbar_title='m/yr')
-at = AnchoredText('c', prop=dict(size=20), frameon=True, loc=2)
-ax3.add_artist(at)
-
-sm = dve_sel.salem.get_map(countries=False);
-sm.set_shapefile(shape_cap, color='black', alpha=0.6)
 sm.set_shapefile(sub_mar, color='r')
 #sm.set_shapefile(shp, color='r')
 sm.set_data(dve_sel.data)
 sm.set_cmap(cmap)
 sm.set_scale_bar()
-sm.visualize(ax=ax3, cbar_title='m/yr')
-at = AnchoredText('c', prop=dict(size=20), frameon=True, loc=2)
-ax3.add_artist(at)
-
+sm.set_lonlat_contours(interval=1.5)
+sm.visualize(ax=ax2, cbar_title='m/yr')
+at = AnchoredText('c', prop=dict(size=16), frameon=True, loc=2)
+ax2.add_artist(at)
 # make it nice
 plt.tight_layout()
 #plt.show()

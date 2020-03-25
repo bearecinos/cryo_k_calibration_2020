@@ -88,7 +88,7 @@ output_dir_path = os.path.join(MAIN_PATH, 'output_data/')
 
 full_exp_dir = []
 
-exclude = {'2_Process_vel_data', '3_Process_RACMO_data',
+exclude = {'10_plot','2_Process_vel_data', '3_Process_RACMO_data',
            '4_k_exp_for_calibration', '7_calving_vel_calibrated',
            '8_calving_racmo_calibrated', '3_Process_RACMO_data'}
 
@@ -141,7 +141,7 @@ print(dk)
 
 import matplotlib.gridspec as gridspec
 
-fig = plt.figure(figsize=(14, 8), constrained_layout=False)
+fig = plt.figure(figsize=(12, 7), constrained_layout=False)
 spec = gridspec.GridSpec(1, 3, width_ratios=[2.5, 1.5, 1.5])
 
 ax0 = plt.subplot(spec[0])
@@ -166,7 +166,7 @@ smap.set_shapefile(sub_no_conect, facecolor=sns.xkcd_rgb["medium blue"],
 smap.set_shapefile(sub_conect, facecolor=sns.xkcd_rgb["navy blue"],
                    label='Tidewater strongly connected',
                    edgecolor=None)
-smap.set_scale_bar()
+smap.set_scale_bar(location=(0.78, 0.04))
 smap.visualize(ax=ax0)
 
 
@@ -206,10 +206,8 @@ ax1.legend((p1[0], p2[0], p3[0]),
 ax1.get_legend().remove()
 
 handles, labels = ax1.get_legend_handles_labels()
-fig.legend(handles, labels, fancybox=False, loc='upper center',
+fig.legend(handles, labels, loc='upper center',
             ncol=3, fontsize=11)
-
-
 
 ax2 = plt.subplot(spec[2])
 palette = sns.color_palette("Blues")
@@ -246,10 +244,10 @@ ax2.set_xticks(ind)
 ax2.set_xticklabels(['2'])
 
 ax2.legend((p1[0], p2[0], p3[0], p4[0]),
-           ('Glaciers with no calving solution',
-            'OGGM preprocessing errors',
-            'Glaciers with no velocity data',
-            'Glaciers with no RACMO data'), loc='upper right', fontsize=9)
+           ('Without Fa solution',
+            'OGGM errors',
+            'Without velocity data',
+            'Without RACMO data'), loc='upper right', fontsize=10)
 
 plt.tight_layout()
 plt.savefig(os.path.join(plot_path, 'rgi_overview.pdf'),
