@@ -43,6 +43,7 @@ u_surf = []
 message = []
 rtol = []
 no_k_values = []
+u_obs = []
 
 for j, f in enumerate(filenames):
     glacier = pd.read_csv(f)
@@ -72,15 +73,16 @@ for j, f in enumerate(filenames):
 
             if out[0] is None:
                 #print(rgi_id)
-                out_2 = utils_vel.k_calibration_with_mu_star(glacier)
+                out_2 = utils_vel.k_calibration_with_mu_star(glacier, data_obs)
                 ids = np.append(ids, rgi_id)
                 k_values = np.append(k_values, out_2[0])
                 mu_star = np.append(mu_star, out_2[1])
                 u_cross = np.append(u_cross, out_2[2])
                 u_surf = np.append(u_surf, out_2[3])
-                message = np.append(message, 'calibrated with mu_star')
-                rtol = np.append(rtol, out[4])
-                no_k_values = np.append(no_k_values, out[5])
+                u_obs = np.append(u_obs, out_2[6])
+                rtol = np.append(rtol, out_2[4])
+                message = np.append(message, out_2[5])
+                no_k_values = np.append(no_k_values, 1)
             else:
                 #print(rgi_id)
                 ids = np.append(ids, rgi_id)
@@ -88,6 +90,7 @@ for j, f in enumerate(filenames):
                 mu_star = np.append(mu_star, out[1])
                 u_cross = np.append(u_cross, out[2])
                 u_surf = np.append(u_surf, out[3])
+                u_obs = np.append(u_obs, out[6])
                 message = np.append(message, 'calibrated with velocities')
                 rtol = np.append(rtol, out[4])
                 no_k_values = np.append(no_k_values, out[5])
@@ -107,6 +110,7 @@ dk = {'RGIId': ids,
       'mu_star': mu_star,
       'u_cross': u_cross,
       'u_surf': u_surf,
+      'u_obs': u_obs,
       'method': message,
       'rtol': rtol,
       'No of k': no_k_values}

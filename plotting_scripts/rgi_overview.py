@@ -100,6 +100,7 @@ for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     for name in subdirs:
         full_exp_dir.append(os.path.join(path, name))
 
+
 prepro_erros = os.path.join(full_exp_dir[0],
                             'glaciers_with_prepro_errors.csv')
 no_vel_data = os.path.join(full_exp_dir[1],
@@ -114,6 +115,7 @@ no_vel_ids = utils_vel.read_rgi_ids_from_csv(no_vel_data)
 no_racmo_ids = utils_vel.read_rgi_ids_from_csv(no_racmo_data)
 no_sol_ids = utils_vel.read_rgi_ids_from_csv(no_solution)
 
+
 # Calculate study area precentage per error category
 area_prepro = utils_vel.calculate_study_area(prepro_ids, sub_no_conect)
 area_no_vel = utils_vel.calculate_study_area(no_vel_ids, sub_no_conect)
@@ -127,7 +129,8 @@ category_two = ['OGGM pre-processing errors',
             'Glaciers with no RACMO DATA',
             'Glaciers with no calving solution']
 
-areas_two = [area_prepro, area_no_vel, area_no_racmo, area_no_solution]
+areas_two = [area_prepro, area_no_vel, area_no_racmo,
+             area_no_solution]
 area_percent_two = areas_two / study_area * 100
 
 k = {'Category': category_two,
@@ -220,13 +223,14 @@ prepro_area = dk['Area (% of study area)'][0]
 no_vel_area = dk['Area (% of study area)'][1]
 no_racmo_area =  dk['Area (% of study area)'][2]
 no_sol_area = dk['Area (% of study area)'][3]
+no_matching = dk['Area (% of study area)'][4]
 
 # Heights of bars1 + bars2
 bars1 = np.add(no_sol_area, prepro_area).tolist()
 bars2 = np.add(bars1, no_vel_area).tolist()
 
 p1 = ax2.bar(ind, no_sol_area, width, color=palette[0],
-             label='Glaciers with no calving solution')
+             label='Glaciers with no $q_{calving}$ solution')
 
 p2 = ax2.bar(ind, prepro_area, width, bottom=no_sol_area, color=palette[1],
              label='OGGM preprocessing errors')
@@ -244,7 +248,7 @@ ax2.set_xticks(ind)
 ax2.set_xticklabels(['2'])
 
 ax2.legend((p1[0], p2[0], p3[0], p4[0]),
-           ('Without Fa solution',
+           ('Without $q_{calving}$ solution',
             'OGGM errors',
             'Without velocity data',
             'Without RACMO data'), loc='upper right', fontsize=10)

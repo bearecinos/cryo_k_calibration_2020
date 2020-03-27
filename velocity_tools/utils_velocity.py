@@ -352,57 +352,44 @@ def k_calibration_with_observations(df_oggm, df_obs):
                      'error_calving_front',
                      'rel_tol_calving_front']
 
-    if df_obs.size == 0:
+    if (df_obs[var_names_obs[2]].values >= 0.99):
+        tol = 0.98
+    else:
+        tol = df_obs[var_names_obs[2]].values
+
+    index = df_oggm.index[np.isclose(df_oggm[var_names_oggm[1]],
+                                     df_obs[var_names_obs[0]].values,
+                                     rtol=tol, atol=0)].tolist()
+    #print(index)
+    df_oggm = df_oggm.loc[index]
+
+    if df_oggm.empty:
         k_value = None
         mu_star = None
         u_cross = None
         u_surf = None
-        rel_tol = None
+        rel_tol = tol
         length = None
-    elif math.isnan(df_obs[var_names_obs[0]].values):
-        k_value = None
-        mu_star = None
-        u_cross = None
-        u_surf = None
-        rel_tol = None
+    elif df_oggm['mu_star'].iloc[0] == 0:
+        k_value = df_oggm['k_values'].iloc[0]
+        mu_star = df_oggm['mu_star'].iloc[0]
+        u_cross = df_oggm['velocity_cross'].iloc[0]
+        u_surf = df_oggm['velocity_surf'].iloc[0]
+        rel_tol = tol
         length = None
     else:
-        if (df_obs[var_names_obs[2]].values >= 0.99):
-            tol = 0.98
-        else:
-            tol = df_obs[var_names_obs[2]].values
+        k_value = np.mean(df_oggm['k_values'])
+        mu_star = np.mean(df_oggm['mu_star'])
+        u_cross = np.mean(df_oggm['velocity_cross'])
+        u_surf = np.mean(df_oggm['velocity_surf'])
+        rel_tol = tol
+        length = len(df_oggm['k_values'])
 
-        index = df_oggm.index[np.isclose(df_oggm[var_names_oggm[1]],
-                                         df_obs[var_names_obs[0]].values,
-                                         rtol=tol, atol=0)].tolist()
-        #print(index)
-        df_oggm = df_oggm.loc[index]
+    u_obs = df_obs[var_names_obs[0]].values
 
-        if df_oggm.empty:
-            k_value = None
-            mu_star = None
-            u_cross = None
-            u_surf = None
-            rel_tol = tol
-            length = None
-        elif df_oggm['mu_star'].iloc[0] == 0:
-            k_value = df_oggm['k_values'].iloc[0]
-            mu_star = df_oggm['mu_star'].iloc[0]
-            u_cross = df_oggm['velocity_cross'].iloc[0]
-            u_surf = df_oggm['velocity_surf'].iloc[0]
-            rel_tol = tol
-            length = None
-        else:
-            k_value = np.mean(df_oggm['k_values'])
-            mu_star = np.mean(df_oggm['mu_star'])
-            u_cross = np.mean(df_oggm['velocity_cross'])
-            u_surf = np.mean(df_oggm['velocity_surf'])
-            rel_tol = tol
-            length = len(df_oggm['k_values'])
+    return k_value, mu_star, u_cross, u_surf, rel_tol, length, u_obs
 
-    return k_value, mu_star, u_cross, u_surf, rel_tol, length
-
-def k_calibration_with_mu_star(df_oggm):
+def k_calibration_with_mu_star(df_oggm, df_obs):
     """Calculates a k parameter per glacier that is
        the mimimum k value before mu_star turns equal to zero
 
@@ -410,23 +397,62 @@ def k_calibration_with_mu_star(df_oggm):
            ----------
            df_oggm: A data frame with oggm surface velocities and
             temperature sensitivities per glacier
+            df_obs: a data frame with the velocity observations
            calculated with different k values
            :returns k value per glacier
            """
-    if math.isnan(df_oggm['mu_star'].iloc[0]):
-        k_value = None
-        mu_star = None
-        u_cross = None
-        u_surf = None
-    else:
-        index = df_oggm.index[df_oggm['mu_star'] > 0.0].tolist()
-        #print(df_oggm)
-        k_value = df_oggm['k_values'].loc[index[-1]]
-        mu_star = df_oggm['mu_star'].loc[index[-1]]
-        u_cross = df_oggm['velocity_cross'].loc[index[-1]]
-        u_surf = df_oggm['velocity_surf'].loc[index[-1]]
 
-    return k_value, mu_star, u_cross, u_surf
+    var_names_oggm = ['velocity_cross', 'velocity_surf']
+
+    var_names_obs = ['vel_calving_front',
+                     'error_calving_front',
+                     'rel_tol_calving_front']
+
+    if math.isnan(df_oggm['mu_star'].iloc[0]):
+        k_value = 0
+        mu_star = 0
+        u_cross = 0
+        u_surf = 0
+        rel_tol = 0
+        message = 'Calving should be zero'
+    else:
+        rel_tol = df_obs[var_names_obs[2]].values
+        u_calving_front = df_obs[var_names_obs[0]].values
+        u_error = df_obs[var_names_obs[1]].values
+
+        sum = u_calving_front + u_error
+        res = u_calving_front - u_error
+        if res < 0:
+            res = sum
+
+        index = df_oggm.index[df_oggm['mu_star'] > 0.0].tolist()
+
+        if df_oggm[var_names_oggm[1]].loc[0] > sum:
+            k_value = df_oggm['k_values'].loc[0]
+            mu_star = df_oggm['mu_star'].loc[0]
+            u_cross = df_oggm['velocity_cross'].loc[0]
+            u_surf = df_oggm['velocity_surf'].loc[0]
+            rel_tol = rel_tol
+            message = 'Velocity from OGGM overestimated clip to min'
+        elif df_oggm[var_names_oggm[1]].loc[index[-1]] < res:
+            k_value = df_oggm['k_values'].loc[index[-1]]
+            mu_star = df_oggm['mu_star'].loc[index[-1]]
+            u_cross = df_oggm['velocity_cross'].loc[index[-1]]
+            u_surf = df_oggm['velocity_surf'].loc[index[-1]]
+            rel_tol = rel_tol
+            message = 'Velocity from OGGM underestimate clip to max'
+        else:
+            print('something else is happening', df_obs['RGI_ID'].values)
+            k_value = 0
+            mu_star = 0
+            u_cross = 0
+            u_surf = 0
+            rel_tol = 0
+            message = None
+
+    u_obs = df_obs[var_names_obs[0]].values
+
+    return k_value, mu_star, u_cross, u_surf, rel_tol, message, u_obs
 
 ## Tools to procress with RACMO
 def open_racmo(netcdf_path, netcdf_mask_path=None):

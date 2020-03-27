@@ -22,7 +22,8 @@ if not os.path.exists(output_path):
 ## Reading the directories that we need
 full_exp_dir = []
 
-exclude = {'10_plot', '4_k_exp_for_calibration', '9_summary_output'}
+exclude = {'10_plot', '4_k_exp_for_calibration',
+           '9_summary_output'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -33,7 +34,8 @@ for path, subdirs, files in os.walk(output_dir_path, topdown=True):
         full_exp_dir.append(os.path.join(path, name))
 
 
-print(len(full_exp_dir))
+#print(full_exp_dir)
+
 
 # Data Errors and gaps
 prepro_erros = os.path.join(full_exp_dir[0],
@@ -53,10 +55,15 @@ k_value_racmo = os.path.join(full_exp_dir[4],
                 'k_calibration_racmo_reltol_q_calving_RACMO_meanNone_.csv')
 
 dk_vel = pd.read_csv(k_value_vel)
-dk_vel = dk_vel.loc[dk_vel.method == 'calibrated with velocities']
+
+# dk_vel_rest = dk_vel.loc[dk_vel.method != 'calibrated with velocities']
+# dk_vel_rest.to_csv(os.path.join(output_path,
+#                                     'glacier_stats_no_matching_vel.csv'))
+#
+# # K results filtered
+# dk_vel = dk_vel.loc[dk_vel.method == 'calibrated with velocities']
 
 dk_racmo = pd.read_csv(k_value_racmo)
-
 
 # Get correct id's!
 prepro_ids = utils_vel.read_rgi_ids_from_csv(prepro_erros)
@@ -80,6 +87,8 @@ racmo_obs = pd.read_csv(os.path.join(full_exp_dir[2],
                                      '1960_1990/racmo_data_19601960_.csv'))
 
 print(len(df_no_sol_stats), len(no_sol_ids))
+
+
 
 vel_obs.rename(columns={'RGI_ID': 'rgi_id'}, inplace=True)
 racmo_obs.rename(columns={'RGI_ID': 'rgi_id'}, inplace=True)
@@ -114,6 +123,7 @@ glac_stats_racmo =  pd.read_csv(os.path.join(full_exp_dir[6],
 print(len(glac_stats_vel), len(glac_stats_racmo))
 print(len(dk_vel), len(dk_racmo))
 
+
 dk_vel.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 dk_racmo.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 
@@ -127,6 +137,7 @@ glac_stats_racmo_plus = pd.merge(left=glac_stats_racmo, right=dk_racmo,
 
 print(len(glac_stats_vel_plus), len(glac_stats_racmo_plus))
 
+
 glac_stats_vel_plus = glac_stats_vel_plus.drop(['Unnamed: 0'], axis=1)
 glac_stats_racmo_plus = glac_stats_racmo_plus.drop(['Unnamed: 0'], axis=1)
 
@@ -135,6 +146,7 @@ glac_stats_vel_plus.to_csv(os.path.join(output_path,
 
 glac_stats_racmo_plus.to_csv(os.path.join(output_path,
                                           'glacier_stats_racmo_method.csv'))
+
 
 ## Gather common glaciers data set for comparision between methods
 
@@ -211,6 +223,7 @@ glac_stats_vel_plus_filtered = glac_stats_vel_plus[['rgi_id',
                                                     'k_value_MV',
                                                     'u_cross_MV',
                                                     'u_surf_MV',
+                                                    'u_obs',
                                                     'rtol',
                                                     'No of k']]
 

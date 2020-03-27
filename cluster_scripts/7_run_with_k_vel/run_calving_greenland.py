@@ -115,11 +115,11 @@ calibration_results = os.path.join(OUTPUT_DATA,
 
 dc = pd.read_csv(calibration_results)
 
-index_vel = np.where(dc['method'] == 'calibrated with mu_star')
-ids_mu_star = dc.loc[index_vel].RGIId.values
-
-keep_no_mu_star = [(i not in ids_mu_star) for i in rgidf.RGIId]
-rgidf = rgidf.iloc[keep_no_mu_star]
+# index_vel = np.where(dc['method'] == 'calibrated with mu_star')
+# ids_mu_star = dc.loc[index_vel].RGIId.values
+#
+# keep_no_mu_star = [(i not in ids_mu_star) for i in rgidf.RGIId]
+# rgidf = rgidf.iloc[keep_no_mu_star]
 
 
 # Sort for more efficient parallel computing
