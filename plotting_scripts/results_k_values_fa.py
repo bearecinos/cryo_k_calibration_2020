@@ -1,6 +1,8 @@
 import os
 import salem
+from salem import DataLevels
 import xarray as xr
+import numpy as np
 import pyproj
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
@@ -34,130 +36,139 @@ proj = pyproj.Proj('+init=EPSG:3413')
 ds_geo.attrs['pyproj_srs'] = proj.srs
 
 ## Paths to output data ####################################################
-output_dir_path = os.path.join(MAIN_PATH, 'output_data/9_summary_output')
+output_dir_path = os.path.join(MAIN_PATH, 'output_data/9_summary_output/')
 
-files = []
-# r=root, d=directories, f = files
-for r, d, f in os.walk(output_dir_path):
-    for file in f:
-        files.append(os.path.join(r, file))
+df_both = pd.read_csv(os.path.join(output_dir_path,
+                                'glacier_stats_both_methods.csv'),
+                      index_col='Unnamed: 0')
 
-print(files)
+df_both['diff_q'] = (df_both['calving_flux_MV'] - df_both['calving_flux_MR']).abs()
 
-df_vel = pd.read_csv(files[1], index_col='Unnamed: 0')
-df_racmo = pd.read_csv(files[0], index_col='Unnamed: 0')
-
-## Only plot glaciers that calve
-df_vel_to_plot = df_vel[df_vel['calving_flux'] > 0]
-df_racmo_to_plot = df_racmo[df_racmo['calving_flux_x'] > 0]
+df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
 
 ## Get coordinates and data
-lat_v = df_vel_to_plot.cenlat.values
-lon_v = df_vel_to_plot.cenlon.values
-rgi_index_v = df_vel_to_plot.index
-k_v = df_vel_to_plot.k_value.values
-fa_v = df_vel_to_plot.calving_flux.values
+lat = df_both.cenlat.values
+lon = df_both.cenlon.values
+rgi_index = df_both.index
 
-lat_r = df_racmo_to_plot.cenlat.values
-lon_r = df_racmo_to_plot.cenlon.values
-rgi_index_r = df_racmo_to_plot.index
-k_r = df_racmo_to_plot.k_value.values
-fa_r = df_racmo_to_plot.calving_flux_x.values
+diff_q = df_both.diff_q.values
+diff_k = df_both.diff_k.values
 
+
+from scipy import stats
+print('k-value RACMO normality test: ',
+      stats.shapiro(df_both.k_value_MR.values))
+print('q_calving RACMO normality test: ',
+      stats.shapiro(df_both.calving_flux_MR.values))
+print('k-value vel normality test: ',
+      stats.shapiro(df_both.k_value_MV.values))
+print('q_calving vel normality test: ',
+      stats.shapiro(df_both.calving_flux_MV.values))
+
+r_kendal_k, p_kendal_k = stats.kendalltau(df_both.k_value_MR.values,
+        df_both.k_value_MV.values)
+
+r_kendal_q, p_kendal_q = stats.kendalltau(df_both.calving_flux_MR.values,
+        df_both.calving_flux_MV.values)
+
+r_pearson_k, p_pearson_k = stats.pearsonr(df_both.k_value_MR.values,
+        df_both.k_value_MV.values)
+
+r_pearson_q, p_pearson_q = stats.pearsonr(df_both.calving_flux_MR.values,
+        df_both.calving_flux_MV.values)
+
+if p_pearson_k > 0.05:
+    print('k - values are uncorrelated (fail to reject H0) p=%.4f' % p_pearson_k)
+else:
+    print('k - values are correlated (reject H0) p=%.3f' % p_pearson_k)
+    print(p_pearson_k)
+
+if p_pearson_q > 0.05:
+    print('q - values are uncorrelated (fail to reject H0) p=%.4f' % p_pearson_q)
+else:
+    print('q - values are correlated (reject H0) p=%.3f' % p_pearson_q)
+    print(p_pearson_k)
 
 #Now plotting
 import matplotlib.gridspec as gridspec
 
-# Plot Fig 1
-fig1 = plt.figure(figsize=(12, 19))
+color_palette = sns.color_palette("muted")
 
-spec = gridspec.GridSpec(2, 2, wspace=0.2, hspace=0.1)
+# Plot Fig 1
+fig1 = plt.figure(figsize=(14, 16), constrained_layout=True)
+
+widths = [2, 2]
+heights = [2, 4]
+
+spec = gridspec.GridSpec(2, 2, wspace=0.5, hspace=0.3, width_ratios=widths,
+                         height_ratios=heights)
+
 
 ax0 = plt.subplot(spec[0])
-sm = ds_geo.salem.get_map(countries=False)
-#sm.set_shapefile(oceans=True)
-sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
-xx, yy = sm.grid.transform(lon_v, lat_v)
-
-ax0.scatter(xx, yy, 12**k_v, alpha=0.6, color=sns.xkcd_rgb["dark green"],
-                                        edgecolor=sns.xkcd_rgb["green"])
-
-# make legend with dummy points
-for a in [1.5, 2.0, 2.5]:
-    ax0.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=12**a,
-                label=str(a) + 'yr$^{-1}$')
-ax0.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='lower right', fontsize=10.5,
-           title='$k$ - velocities',
-           title_fontsize=10);
-#sm.set_scale_bar(location=(0.87, 0.95))
-sm.visualize(ax=ax0)
+sns.scatterplot(x='k_value_MR', y='k_value_MV', data=df_both, ax=ax0,
+                color=color_palette[3])
+ax0.set_xlabel('$k$ - RACMO \n [yr$^{-1}$]')
+ax0.set_ylabel('$k$ - velocities \n [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+test = AnchoredText('$r_{s}$ = '+ str(np.around(r_pearson_k,
+                    decimals=3)) + '\np-value = ' + str(format(p_pearson_k,
+                                                                ".3E")),
+                    prop=dict(size=16), frameon=False, loc=4)
 ax0.add_artist(at)
+ax0.add_artist(test)
 
 ax1 = plt.subplot(spec[1])
-sm = ds_geo.salem.get_map(countries=False)
-#sm.set_shapefile(oceans=True)
-sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
-xx, yy = sm.grid.transform(lon_r, lat_r)
-
-ax1.scatter(xx, yy, 12**k_r, alpha=0.5, color=sns.xkcd_rgb["dark purple"],
-                                        edgecolor=sns.xkcd_rgb["purple"])
-
-# make legend with dummy points
-for a in [1.5, 2.0, 2.5]:
-    ax1.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=12**a,
-                label=str(a) + 'yr$^{-1}$')
-ax1.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='lower right', fontsize=10.5,
-           title='$k$ - RACMO',
-           title_fontsize=10);
-#sm.set_scale_bar(location=(0.87, 0.95))
-sm.visualize(ax=ax1)
+sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', data=df_both, ax=ax1,
+                color=color_palette[4])
+ax1.set_xlabel('$q_{calving}$ - Racmo \n [$km^3$/yr]')
+ax1.set_ylabel('$q_{calving}$ - velocities \n [$km^3$/yr]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+test = AnchoredText('$r_{s}$ = '+ str(np.around(r_pearson_q,
+                    decimals=3)) + '\np-value = ' + str(format(p_pearson_q,
+                                                                ".3E")),
+                    prop=dict(size=16), frameon=False, loc=1)
 ax1.add_artist(at)
-
+ax1.add_artist(test)
 
 ax2 = plt.subplot(spec[2])
 sm = ds_geo.salem.get_map(countries=False)
 #sm.set_shapefile(oceans=True)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
-xx, yy = sm.grid.transform(lon_v, lat_v)
+xx, yy = sm.grid.transform(lon, lat)
 
-ax2.scatter(xx, yy, 5000*fa_v, alpha=0.6, color=sns.xkcd_rgb["light green"],
-                                        edgecolor=sns.xkcd_rgb["green"])
+ax2.scatter(xx, yy, 50**diff_k, alpha=0.6, color=color_palette[3],
+                                        edgecolor=color_palette[3])
 
 # make legend with dummy points
-for a in [0.001, 0.01, 0.1]:
-    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=5000*a,
-                label=str(a) + 'km$^{3}$/yr')
+for a in [0.5, 1.0, 1.5]:
+    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=50**a,
+                label=str(a) + 'yr$^{-1}$')
 ax2.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='lower right', fontsize=11,
-           title='$q_{calving}$ - velocities',
+           labelspacing=1, loc='lower right', fontsize=10.5,
+           title='$k$ differences',
            title_fontsize=10);
+sm.set_scale_bar(location=(0.17, 0.02))
 sm.visualize(ax=ax2)
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
 ax2.add_artist(at)
-
 
 ax3 = plt.subplot(spec[3])
 sm = ds_geo.salem.get_map(countries=False)
 #sm.set_shapefile(oceans=True)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
-xx, yy = sm.grid.transform(lon_r, lat_r)
+xx, yy = sm.grid.transform(lon, lat)
 
-ax3.scatter(xx, yy, 5000*fa_r, alpha=0.6, color=sns.xkcd_rgb["light purple"],
-                                        edgecolor=sns.xkcd_rgb["purple"])
+ax3.scatter(xx, yy, 2000*diff_q, alpha=0.5, color=color_palette[4],
+                                        edgecolor=color_palette[4])
 
 # make legend with dummy points
-for a in [0.001, 0.01, 0.1]:
-    ax3.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=5000*a,
+for a in [0.05, 0.1, 0.5]:
+    ax3.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=2000*a,
                 label=str(a) + 'km$^{3}$/yr')
 ax3.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='lower right', fontsize=11,
-           title='$q_{calving}$ - RACMO',
+           labelspacing=1.5, loc='lower right', fontsize=11,
+           title='$q_{calving}$ differences',
            title_fontsize=10);
-sm.set_scale_bar(location=(0.85, 0.94))
 sm.visualize(ax=ax3)
 at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
 ax3.add_artist(at)

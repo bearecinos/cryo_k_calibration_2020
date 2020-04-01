@@ -23,7 +23,7 @@ if not os.path.exists(output_path):
 full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration',
-           '9_summary_output'}
+           '9_summary_output', '11_climate_stats'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -34,8 +34,7 @@ for path, subdirs, files in os.walk(output_dir_path, topdown=True):
         full_exp_dir.append(os.path.join(path, name))
 
 
-#print(full_exp_dir)
-
+print(full_exp_dir)
 
 # Data Errors and gaps
 prepro_erros = os.path.join(full_exp_dir[0],

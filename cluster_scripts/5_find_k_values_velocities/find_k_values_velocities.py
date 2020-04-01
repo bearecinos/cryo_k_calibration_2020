@@ -48,15 +48,11 @@ u_obs = []
 for j, f in enumerate(filenames):
     glacier = pd.read_csv(f)
     glacier = glacier.drop_duplicates(subset=('calving_flux'), keep=False)
+    base = os.path.basename(f)
+    rgi_id = os.path.splitext(base)[0]
     if glacier.empty:
-        base = os.path.basename(f)
-        name = os.path.splitext(base)[0]
-        files_no_calving = np.append(files_no_calving, name)
+        files_no_calving = np.append(files_no_calving, rgi_id)
     else:
-        glacier = pd.read_csv(f)
-        base = os.path.basename(f)
-        rgi_id = os.path.splitext(base)[0]
-
         # Get observations for that glacier
         index = d_obs.index[d_obs['RGI_ID'] == rgi_id].tolist()
 

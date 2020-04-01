@@ -370,13 +370,6 @@ def k_calibration_with_observations(df_oggm, df_obs):
         u_surf = None
         rel_tol = tol
         length = None
-    elif df_oggm['mu_star'].iloc[0] == 0:
-        k_value = df_oggm['k_values'].iloc[0]
-        mu_star = df_oggm['mu_star'].iloc[0]
-        u_cross = df_oggm['velocity_cross'].iloc[0]
-        u_surf = df_oggm['velocity_surf'].iloc[0]
-        rel_tol = tol
-        length = None
     else:
         k_value = np.mean(df_oggm['k_values'])
         mu_star = np.mean(df_oggm['mu_star'])
@@ -442,13 +435,17 @@ def k_calibration_with_mu_star(df_oggm, df_obs):
             rel_tol = rel_tol
             message = 'Velocity from OGGM underestimate clip to max'
         else:
-            print('something else is happening', df_obs['RGI_ID'].values)
-            k_value = 0
-            mu_star = 0
-            u_cross = 0
-            u_surf = 0
-            rel_tol = 0
-            message = None
+            index = df_oggm.index[np.isclose(df_oggm[var_names_oggm[1]],
+                                             sum,
+                                             rtol=0.05, atol=0)].tolist()
+            # print(index)
+            df_oggm = df_oggm.loc[index]
+            k_value = np.mean(df_oggm['k_values'])
+            mu_star = np.mean(df_oggm['mu_star'])
+            u_cross = np.mean(df_oggm['velocity_cross'])
+            u_surf = np.mean(df_oggm['velocity_surf'])
+            rel_tol = rel_tol
+            message = 'Error + vel within range of model clip to most likely'
 
     u_obs = df_obs[var_names_obs[0]].values
 
@@ -976,3 +973,72 @@ def calculate_observation_vel_at_the_main_flowline(gdir,
     err_fls_end = np.around(dr_mean_end, decimals=2)
 
     return vel_fls_all, err_fls_all, vel_fls_end, err_fls_end, len(x)
+
+
+def calculate_PDM(gdir):
+    """Calculates the Positive degree month sum; is the total sum,
+    of monthly averages temperatures above 0°C in a 31 yr period
+    centered in t_star year and with a reference height at the free board.
+
+    Parameters
+    ----------
+    gidr : Glacier directory
+    """
+    # First we get the years to analise
+    # Parameters
+    temp_all_solid = cfg.PARAMS['temp_all_solid']
+    temp_all_liq = cfg.PARAMS['temp_all_liq']
+    temp_melt = cfg.PARAMS['temp_melt']
+    prcp_fac = cfg.PARAMS['prcp_scaling_factor']
+    default_grad = cfg.PARAMS['temp_default_gradient']
+
+    df = gdir.read_json('local_mustar')
+    tstar = df['t_star']
+    mu_hp = int(cfg.PARAMS['mu_star_halfperiod'])
+    # Year range
+    yr = [tstar - mu_hp, tstar + mu_hp]
+
+    #Then the heights
+    heights = gdir.get_inversion_flowline_hw()[0]
+
+    #Then the climate data
+    ds = xr.open_dataset(gdir.get_filepath('climate_monthly'))
+    # We only select the years tha we need
+    new_ds = ds.sel(time=slice(str(yr[0])+'-01-01',
+                               str(yr[1])+'-12-31'))
+    # we make it a data frame
+    df = new_ds.to_dataframe()
+
+    # We create the new matrix
+    igrad = df.temp * 0 + cfg.PARAMS['temp_default_gradient']
+    iprcp = df.prcp
+    iprcp *= prcp_fac
+
+    npix = len(heights)
+
+    # We now estimate the temperature gradient
+    grad_temp = np.atleast_2d(igrad).repeat(npix, 0)
+    grad_temp *= (heights.repeat(len(df.index)).reshape(
+        grad_temp.shape) - new_ds.ref_hgt)
+    temp2d = np.atleast_2d(df.temp).repeat(npix, 0) + grad_temp
+
+    # Precipitation
+    prcpsol = np.atleast_2d(iprcp).repeat(npix, 0)
+    fac = 1 - (temp2d - temp_all_solid) / (temp_all_liq - temp_all_solid)
+    fac = np.clip(fac, 0, 1)
+    prcpsol = prcpsol * fac
+
+    data_temp = pd.DataFrame(temp2d,
+                             columns=[df.index],
+                             index=heights)
+    data_prcp = pd.DataFrame(prcpsol,
+                             columns=[df.index],
+                             index=heights)
+
+    temp_free_board = data_temp.iloc[-1]
+    solid_prcp_top = data_prcp.iloc[0].sum()
+
+    PDM_temp = temp_free_board[temp_free_board > 0].sum()
+    PDM_number = temp_free_board[temp_free_board > 0].count()
+
+    return PDM_temp, PDM_number, solid_prcp_top

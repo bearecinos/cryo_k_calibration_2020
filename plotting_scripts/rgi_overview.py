@@ -90,7 +90,8 @@ full_exp_dir = []
 
 exclude = {'10_plot','2_Process_vel_data', '3_Process_RACMO_data',
            '4_k_exp_for_calibration', '7_calving_vel_calibrated',
-           '8_calving_racmo_calibrated', '3_Process_RACMO_data'}
+           '8_calving_racmo_calibrated', '3_Process_RACMO_data',
+           '11_climate_stats'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -153,7 +154,7 @@ smap = ds_geo.salem.get_map(countries=False)
 
 # Add coastline and Ice cap outline
 smap.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.7)
-
+#
 # Land-terminating
 smap.set_shapefile(sub_lan, facecolor=sns.xkcd_rgb["grey"],
                    label='Land-terminating',
@@ -196,7 +197,7 @@ p3 = ax1.bar(ind, Tidewater_no_connected, width, bottom=bars,
              color=sns.xkcd_rgb["medium blue"], label='Tidewater weakly connected (study area)')
 
 ax1.set_ylabel('Area (% of Greenland)')
-ax1.set_ylim(0, 100)
+#ax1.set_ylim(0, 100)
 ax1.set_xticks(ind, ('1'))
 ax1.set_xticks(ind)
 ax1.set_xticklabels(['1'])
@@ -213,7 +214,7 @@ fig.legend(handles, labels, loc='upper center',
             ncol=3, fontsize=11)
 
 ax2 = plt.subplot(spec[2])
-palette = sns.color_palette("Blues")
+palette = sns.color_palette("colorblind")
 # Plotting bar plot
 N = 1
 ind = np.arange(N)    # the x locations for the groups
@@ -223,35 +224,45 @@ prepro_area = dk['Area (% of study area)'][0]
 no_vel_area = dk['Area (% of study area)'][1]
 no_racmo_area =  dk['Area (% of study area)'][2]
 no_sol_area = dk['Area (% of study area)'][3]
-no_matching = dk['Area (% of study area)'][4]
+
+run_area = 100 - no_sol_area - prepro_area - no_vel_area - no_racmo_area
 
 # Heights of bars1 + bars2
-bars1 = np.add(no_sol_area, prepro_area).tolist()
-bars2 = np.add(bars1, no_vel_area).tolist()
+bars1 = np.add(run_area, no_sol_area).tolist()
+bars2 = np.add(bars1, prepro_area).tolist()
+bars3 = np.add(bars2, no_vel_area).tolist()
 
-p1 = ax2.bar(ind, no_sol_area, width, color=palette[0],
-             label='Glaciers with no $q_{calving}$ solution')
+p5 = ax2.bar(ind, run_area, width, color=palette[0],
+             label='Glaciers process in this study')
 
-p2 = ax2.bar(ind, prepro_area, width, bottom=no_sol_area, color=palette[1],
+p1 = ax2.bar(ind, no_sol_area, width, bottom=run_area, color=palette[1],
+             label='Glaciers with no calving solution')
+
+p2 = ax2.bar(ind, prepro_area, width, bottom=bars1, color=palette[2],
              label='OGGM preprocessing errors')
 
-p3 = ax2.bar(ind, no_vel_area, width, bottom=bars1, color=palette[2],
+p3 = ax2.bar(ind, no_vel_area, width, bottom=bars2, color=palette[3],
              label='Glaciers with no velocity data')
 
-p4 = ax2.bar(ind, no_racmo_area, width, bottom=bars2, color=palette[3],
+p4 = ax2.bar(ind, no_racmo_area, width, bottom=bars3, color=palette[4],
              label='Glaciers with no RACMO data')
 
+
+
 ax2.set_ylabel('Area (% of study area)')
-ax2.set_yticks(ax1.get_yticks())
+#ax2.set_yticks(ax1.get_yticks())
+#ax2.set_ylim(0, 100)
 
 ax2.set_xticks(ind)
 ax2.set_xticklabels(['2'])
 
-ax2.legend((p1[0], p2[0], p3[0], p4[0]),
-           ('Without $q_{calving}$ solution',
+ax2.legend((p5[0], p1[0], p2[0], p3[0], p4[0]),
+           ('Processed',
+            'Without $q_{calving}$ solution',
             'OGGM errors',
             'Without velocity data',
-            'Without RACMO data'), loc='upper right', fontsize=10)
+            'Without RACMO data'), loc='lower right', frameon=True,
+           facecolor='white', fancybox=False, fontsize=9.5)
 
 plt.tight_layout()
 plt.savefig(os.path.join(plot_path, 'rgi_overview.pdf'),
