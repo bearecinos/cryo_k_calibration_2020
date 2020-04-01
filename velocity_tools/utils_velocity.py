@@ -32,6 +32,10 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
+def calculate_volume_percentage(volume_one, volume_two):
+    return np.around((volume_two*100)/volume_one,2)-100
+
+
 def calving_flux_km3yr(gdir, smb):
     """Calving mass-loss from specific MB equivalent.
     to Km^3/yr
@@ -48,6 +52,26 @@ def calving_flux_km3yr(gdir, smb):
     q_calving = (smb * gdir.rgi_area_m2) / (1e9 * rho)
 
     return q_calving
+
+def calculate_sea_level_equivalent(value):
+    """
+    Calculates sea level equivalent of a volume
+    of ice in km^3
+    taken from: http://www.antarcticglaciers.org
+    :param value: glacier volume
+    :return: glacier volume in s.l.e
+    """
+    # Convert density of ice to Gt/km^3
+    rho_ice = 900 * 1e-3 # Gt/km^3
+
+    area_ocean = 3.618e8 # km^2
+    height_ocean = 1e-6 # km (1 mm)
+
+    # Volume of water required to raise global sea levels by 1 mm
+    vol_water = area_ocean*height_ocean # km^3 of water
+
+    mass_ice = value * rho_ice # Gt
+    return mass_ice*(1 / vol_water)
 
 def write_pickle_file(gdir, var, filename, filesuffix=''):
     """ Writes a variable to a pickle on disk.

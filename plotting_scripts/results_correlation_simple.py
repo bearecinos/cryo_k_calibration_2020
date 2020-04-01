@@ -68,9 +68,10 @@ df_vel['k_diff'] = (df_vel.k_value - df_racmo.k_value).abs()
 
 data_all = pd.concat([df_vel, df_racmo], sort=False)
 
-print(data_all.columns)
+#print(data_all)
 
-data_all['calving_front_width'] = data_all['calving_front_width']*1e-3
+
+data_all['calving_front_width'] = data_all.loc[:,'calving_front_width']*1e-3
 
 
 # data_all.rename(columns={'k_value': '$k$ \n [$yr^{-1}$]',
@@ -151,6 +152,8 @@ ax1_1.add_artist(test)
 ax1_1.get_legend().remove()
 
 plt.tight_layout()
+plt.savefig(os.path.join(plot_path, 'correlation_plot.jpg'),
+            bbox_inches='tight')
 plt.savefig(os.path.join(plot_path, 'correlation_plot.pdf'),
             bbox_inches='tight')
 

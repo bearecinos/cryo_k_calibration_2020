@@ -71,5 +71,7 @@ plt.close(2)
 plt.close(3)
 
 plt.tight_layout()
+plt.savefig(os.path.join(plot_path, 'box_plot.jpg'),
+            bbox_inches='tight')
 plt.savefig(os.path.join(plot_path, 'box_plot.pdf'),
             bbox_inches='tight')

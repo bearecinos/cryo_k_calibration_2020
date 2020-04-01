@@ -141,5 +141,7 @@ at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
 ax3.add_artist(at)
 
 plt.tight_layout()
+plt.savefig(os.path.join(plot_path, 'model_bias.jpg'),
+            bbox_inches='tight')
 plt.savefig(os.path.join(plot_path, 'model_bias.pdf'),
             bbox_inches='tight')

@@ -42,9 +42,14 @@ df_both = pd.read_csv(os.path.join(output_dir_path,
                                 'glacier_stats_both_methods.csv'),
                       index_col='Unnamed: 0')
 
+#df_both  = df_both.loc[df_both.k_value_MR != 0]
+
+
 df_both['diff_q'] = (df_both['calving_flux_MV'] - df_both['calving_flux_MR']).abs()
 
 df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
+
+df_both  = df_both.loc[df_both.diff_k != 0]
 
 ## Get coordinates and data
 lat = df_both.cenlat.values
@@ -110,8 +115,8 @@ sns.scatterplot(x='k_value_MR', y='k_value_MV', data=df_both, ax=ax0,
 ax0.set_xlabel('$k$ - RACMO \n [yr$^{-1}$]')
 ax0.set_ylabel('$k$ - velocities \n [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
-test = AnchoredText('$r_{s}$ = '+ str(np.around(r_pearson_k,
-                    decimals=3)) + '\np-value = ' + str(format(p_pearson_k,
+test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_k,
+                    ".2f")) + '\np-value = ' + str(format(p_pearson_k,
                                                                 ".3E")),
                     prop=dict(size=16), frameon=False, loc=4)
 ax0.add_artist(at)
@@ -123,8 +128,8 @@ sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', data=df_both, ax=ax1,
 ax1.set_xlabel('$q_{calving}$ - Racmo \n [$km^3$/yr]')
 ax1.set_ylabel('$q_{calving}$ - velocities \n [$km^3$/yr]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
-test = AnchoredText('$r_{s}$ = '+ str(np.around(r_pearson_q,
-                    decimals=3)) + '\np-value = ' + str(format(p_pearson_q,
+test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_q,
+                    ".2f")) + '\np-value = ' + str(format(p_pearson_q,
                                                                 ".3E")),
                     prop=dict(size=16), frameon=False, loc=1)
 ax1.add_artist(at)
@@ -174,5 +179,7 @@ at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
 ax3.add_artist(at)
 
 plt.tight_layout()
-plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
             bbox_inches='tight')
+# plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+#             bbox_inches='tight')

@@ -23,7 +23,7 @@ if not os.path.exists(output_path):
 full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration',
-           '9_summary_output', '11_climate_stats'}
+           '9_summary_output', '11_climate_stats', '12_volume_vsl'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -55,12 +55,15 @@ k_value_racmo = os.path.join(full_exp_dir[4],
 
 dk_vel = pd.read_csv(k_value_vel)
 
-# dk_vel_rest = dk_vel.loc[dk_vel.method != 'calibrated with velocities']
+#dk_vel  = dk_vel.loc[dk_vel.method != 'Velocity from OGGM overestimated clip to min']
+
+#print(dk_vel.loc[0])
+
 # dk_vel_rest.to_csv(os.path.join(output_path,
 #                                     'glacier_stats_no_matching_vel.csv'))
 #
 # # K results filtered
-# dk_vel = dk_vel.loc[dk_vel.method == 'calibrated with velocities']
+#dk_vel = dk_vel.loc[dk_vel.method == 'calibrated with velocities']
 
 dk_racmo = pd.read_csv(k_value_racmo)
 
@@ -127,7 +130,7 @@ dk_vel.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 dk_racmo.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 
 glac_stats_vel_plus = pd.merge(left=glac_stats_vel, right=dk_vel,
-                               how='left', left_on = 'rgi_id',
+                               how='inner', left_on = 'rgi_id',
                                right_on='rgi_id')
 
 glac_stats_racmo_plus = pd.merge(left=glac_stats_racmo, right=dk_racmo,
