@@ -106,23 +106,6 @@ rgidf = rgidf.iloc[keep_errors]
 
 print(len(rgidf))
 
-# Run a single id for testing
-# glacier = ['RGI60-05.00304', 'RGI60-05.08443']
-# keep_indexes = [(i in glacier) for i in rgidf.RGIId]
-# rgidf = rgidf.iloc[keep_indexes]
-
-# Run glaciers in two groups
-#Group 1: small glaciers
-# glac_sel = rgidf.loc[(rgidf.Area < 5.0)]
-# ids_sel = glac_sel.RGIId.values
-# keep_glac = [(i in ids_sel) for i in rgidf.RGIId]
-# rgidf = rgidf.iloc[keep_glac]
-
-#Group 2: big glaciers
-# glac_sel = rgidf.loc[(rgidf.Area < 5.0)]
-# ids_sel = glac_sel.RGIId
-# keep_glac = [(i not in ids_sel) for i in rgidf.RGIId]
-# rgidf = rgidf.iloc[keep_glac]
 
 # Sort for more efficient parallel computing
 rgidf = rgidf.sort_values('Area', ascending=False)
@@ -169,53 +152,45 @@ log.info("OGGM without calving is done! Time needed: %02d:%02d:%02d" %
 k_factors = np.arange(0.01,3.01,0.01)
 
 for gdir in gdirs:
+    cross = []
+    surface = []
+    flux = []
+    mu_star = []
+    k_used = []
 
-    index = d_obs.index[d_obs['RGI_ID'] == gdir.rgi_id].tolist()
-    data_obs = d_obs.iloc[index]
+    for k in k_factors:
 
-    if data_obs.empty:
-        pass
-    else:
+        # Find a calving flux.
+        cfg.PARAMS['k_calving'] = k
+        out = inversion.find_inversion_calving(gdir)
+        if out is None:
+            continue
 
-        cross = []
-        surface = []
-        flux = []
-        mu_star = []
-        k_used = []
+        calving_flux = out['calving_flux']
+        calving_mu_star = out['calving_mu_star']
 
-        for k in k_factors:
+        inversion.compute_velocities(gdir)
 
-            # Find a calving flux.
-            cfg.PARAMS['k_calving'] = k
-            out = inversion.find_inversion_calving(gdir)
-            if out is None:
-                continue
+        vel_out = utils_vel.velocity_average_main_flowline(gdir)
 
-            calving_flux = out['calving_flux']
-            calving_mu_star = out['calving_mu_star']
+        vel_surface = vel_out[2]
+        vel_cross = vel_out[3]
 
-            inversion.compute_velocities(gdir)
+        cross = np.append(cross, vel_cross)
+        surface = np.append(surface, vel_surface)
+        flux = np.append(flux, calving_flux)
+        mu_star = np.append(mu_star, calving_mu_star)
+        k_used = np.append(k_used, k)
 
-            vel_out = utils_vel.velocity_average_main_flowline(gdir)
+        if mu_star[-1] == 0:
+            break
 
-            vel_surface = vel_out[2]
-            vel_cross = vel_out[3]
+    d = {'k_values': k_used,
+         'velocity_cross': cross,
+         'velocity_surf': surface,
+         'calving_flux': flux,
+         'mu_star': mu_star}
 
-            cross = np.append(cross, vel_cross)
-            surface = np.append(surface, vel_surface)
-            flux = np.append(flux, calving_flux)
-            mu_star = np.append(mu_star, calving_mu_star)
-            k_used = np.append(k_used, k)
+    df = pd.DataFrame(data=d)
 
-            if mu_star[-1] == 0:
-                break
-
-        d = {'k_values': k_used,
-             'velocity_cross': cross,
-             'velocity_surf': surface,
-             'calving_flux': flux,
-             'mu_star': mu_star}
-
-        df = pd.DataFrame(data=d)
-
-        df.to_csv(os.path.join(cfg.PATHS['working_dir'], gdir.rgi_id + '.csv'))
+    df.to_csv(os.path.join(cfg.PATHS['working_dir'], gdir.rgi_id + '.csv'))

@@ -222,8 +222,9 @@ def velocity_average_from_elevation(gdir, ele, filesuffix=''):
 
 def velocity_average_main_flowline(gdir, filesuffix=''):
     """ Calculates the average velocity along the main flowline
-    in different parts (i) along the entire main flowline and at the
-    calving front
+    in different parts and at the last one third region upstream
+    of the calving front
+
     :param gdir: Glacier directory
     :param with_sliding: set to False if you dont want a sliding velocity
 
@@ -740,10 +741,17 @@ def get_smb31_from_glacier(gdir):
     if os.path.exists(fpath):
         with ncDataset(fpath, mode='r') as nc:
             smb = nc.variables['smb'][:]
-            smb_mean = np.nanmean(smb)
-            smb_cum = np.nansum(smb)
-            smb_calving_mean = calving_flux_km3yr(gdir, smb_mean)
-            smb_calving_cum = calving_flux_km3yr(gdir, smb_cum)
+            if smb.all() == 0:
+                smb_mean = None
+                smb_cum = None
+                smb_calving_mean = None
+                smb_calving_cum = None
+                print('This glacier has no racmo data ' + gdir.rgi_id)
+            else:
+                smb_mean = np.nanmean(smb)
+                smb_cum = np.nansum(smb)
+                smb_calving_mean = calving_flux_km3yr(gdir, smb_mean)
+                smb_calving_cum = calving_flux_km3yr(gdir, smb_cum)
     else:
         print('This glacier has no racmo data ' + gdir.rgi_id)
         smb_mean = None

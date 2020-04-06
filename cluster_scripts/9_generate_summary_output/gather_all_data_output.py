@@ -34,16 +34,16 @@ for path, subdirs, files in os.walk(output_dir_path, topdown=True):
         full_exp_dir.append(os.path.join(path, name))
 
 
-print(full_exp_dir)
+#print(full_exp_dir)
 
 # Data Errors and gaps
 prepro_erros = os.path.join(full_exp_dir[0],
                             'glaciers_with_prepro_errors.csv')
-no_vel_data = os.path.join(full_exp_dir[3],
-                           'glaciers_with_no_vel_data.csv')
-no_racmo_data = os.path.join(full_exp_dir[4],
-                             'glaciers_with_no_racmo_data.csv')
-no_solution =  os.path.join(full_exp_dir[4],
+no_vel_data = os.path.join(full_exp_dir[1],
+                           'glaciers_with_no_velocity_data.csv')
+no_racmo_data = os.path.join(full_exp_dir[2],
+                             '1960_1990/glaciers_with_no_racmo_data.csv')
+no_solution =  os.path.join(full_exp_dir[3],
                             'glaciers_with_no_solution.csv')
 
 # # Results k values
@@ -86,11 +86,9 @@ vel_obs = pd.read_csv(os.path.join(full_exp_dir[1],
                                    'velocity_observations.csv'))
 
 racmo_obs = pd.read_csv(os.path.join(full_exp_dir[2],
-                                     '1960_1990/racmo_data_19601960_.csv'))
+                                     '1960_1990/racmo_data_19611990_.csv'))
 
 print(len(df_no_sol_stats), len(no_sol_ids))
-
-
 
 vel_obs.rename(columns={'RGI_ID': 'rgi_id'}, inplace=True)
 racmo_obs.rename(columns={'RGI_ID': 'rgi_id'}, inplace=True)

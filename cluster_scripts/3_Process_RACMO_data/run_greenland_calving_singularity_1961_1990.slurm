@@ -36,7 +36,7 @@ srun -n 1 -c "${SLURM_JOB_CPUS_PER_NODE}" singularity exec docker://oggm/oggm:la
   export OGGM_DOWNLOAD_CACHE=/home/data/download
   export OGGM_DOWNLOAD_CACHE_RO=1
 
-  python3 ./3_1_get_racmo_smb31_1960_1990.py
+  python3 ./3_1_get_racmo_smb31_1961_1990.py
 EOF
 
 echo "Start copying..."

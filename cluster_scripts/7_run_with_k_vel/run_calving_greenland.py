@@ -51,6 +51,9 @@ RGI_FILE = os.path.join(MAIN_PATH,
 OUTPUT_DATA = os.path.join(MAIN_PATH,
                     'output_data/5_calibration_vel_results/')
 
+data_gap = os.path.join(MAIN_PATH,
+                        'output_data/2_Process_vel_data/')
+
 # Use multiprocessing
 cfg.PARAMS['use_multiprocessing'] = True
 
@@ -103,8 +106,8 @@ ids_rgi = d_no_sol.RGIId.values
 keep_no_solution = [(i not in ids_rgi) for i in rgidf.RGIId]
 rgidf = rgidf.iloc[keep_no_solution]
 
-no_vel_data = os.path.join(OUTPUT_DATA,
-                           'glaciers_with_no_vel_data.csv')
+no_vel_data = os.path.join(data_gap,
+                           'glaciers_with_no_velocity_data.csv')
 d_no_data = pd.read_csv(no_vel_data)
 ids_no_data = d_no_data.RGIId.values
 keep_no_data = [(i not in ids_no_data) for i in rgidf.RGIId]

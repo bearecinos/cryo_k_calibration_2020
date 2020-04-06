@@ -63,8 +63,6 @@ for j, f in enumerate(filenames):
         else:
             data_obs = d_obs.iloc[index]
 
-            ## TODO : fix this according to the output that we have!!!
-            #print(rgi_id)
             out = utils_vel.k_calibration_with_observations(glacier, data_obs)
 
             if out[0] is None:

@@ -88,10 +88,9 @@ output_dir_path = os.path.join(MAIN_PATH, 'output_data/')
 
 full_exp_dir = []
 
-exclude = {'10_plot','2_Process_vel_data', '3_Process_RACMO_data',
-           '4_k_exp_for_calibration', '7_calving_vel_calibrated',
-           '8_calving_racmo_calibrated', '3_Process_RACMO_data',
-           '11_climate_stats'}
+exclude = {'10_plot', '4_k_exp_for_calibration', '7_calving_vel_calibrated',
+           '8_calving_racmo_calibrated',
+           '11_climate_stats', '12_volume_vsl'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -101,14 +100,16 @@ for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     for name in subdirs:
         full_exp_dir.append(os.path.join(path, name))
 
+print(full_exp_dir)
+
 
 prepro_erros = os.path.join(full_exp_dir[0],
                             'glaciers_with_prepro_errors.csv')
 no_vel_data = os.path.join(full_exp_dir[1],
-                           'glaciers_with_no_vel_data.csv')
+                           'glaciers_with_no_velocity_data.csv')
 no_racmo_data = os.path.join(full_exp_dir[2],
-                             'glaciers_with_no_racmo_data.csv')
-no_solution =  os.path.join(full_exp_dir[2],
+                             '1960_1990/glaciers_with_no_racmo_data.csv')
+no_solution =  os.path.join(full_exp_dir[3],
                             'glaciers_with_no_solution.csv')
 
 prepro_ids = utils_vel.read_rgi_ids_from_csv(prepro_erros)

@@ -48,6 +48,9 @@ cfg.PATHS['working_dir'] = WORKING_DIR
 RGI_FILE = os.path.join(MAIN_PATH,
 'input_data/05_rgi61_GreenlandPeriphery_bea/05_rgi61_GreenlandPeriphery.shp')
 
+data_gap = os.path.join(MAIN_PATH,
+                        'output_data/3_racmo/1960_1990/')
+
 OUTPUT_DATA = os.path.join(MAIN_PATH,
                     'output_data/6_racmo_calibration_results/')
 
@@ -103,7 +106,7 @@ ids_rgi = d_no_sol.RGIId.values
 keep_no_solution = [(i not in ids_rgi) for i in rgidf.RGIId]
 rgidf = rgidf.iloc[keep_no_solution]
 
-no_racmo_data = os.path.join(OUTPUT_DATA,
+no_racmo_data = os.path.join(data_gap,
                            'glaciers_with_no_racmo_data.csv')
 d_no_data = pd.read_csv(no_racmo_data)
 ids_no_data = d_no_data.RGIId.values

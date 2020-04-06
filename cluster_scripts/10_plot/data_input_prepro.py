@@ -20,9 +20,9 @@ sys.path.append(MAIN_PATH)
 from velocity_tools import utils_velocity as utils_vel
 
 # PARAMS for plots
-rcParams['axes.labelsize'] = 20
-rcParams['xtick.labelsize'] = 20
-rcParams['ytick.labelsize'] = 20
+rcParams['axes.labelsize'] = 18
+rcParams['xtick.labelsize'] = 18
+rcParams['ytick.labelsize'] = 18
 #rcParams['legend.fontsize'] = 12
 sns.set_context('poster')
 
@@ -64,7 +64,7 @@ dsc['time'] = np.append(pd.period_range(start='2018.01.01',
                            pd.period_range(start='1958.01.01',
                                     end='2017.12.01', freq='M').to_timestamp())
 
-ds_smb_two = dsc.isel(time=slice(36,12*34))
+ds_smb_two = dsc.isel(time=slice(48,12*34))
 #see = ds_smb_two.chunk({'time':2})
 avg = ds_smb_two.SMB_rec.mean(dim='time').compute()
 
@@ -98,15 +98,13 @@ ds_sel['time'] = np.append(pd.period_range(start='2018.01.01',
                                     end='2017.12.01', freq='M').to_timestamp())
 
 # We select the time that we need 1960-1990
-ds_smb_two_sel = ds_sel.isel(time=slice(36,12*34))
+ds_smb_two_sel = ds_sel.isel(time=slice(48,12*34))
 #ds_smb_time_sel = ds_smb_two_sel.chunk({'time':2})
 
 smb_avg_sel = ds_smb_two_sel.SMB_rec.mean(dim='time', skipna=True).compute()
 
 
 #Now plotting
-import matplotlib.gridspec as gridspec
-
 import matplotlib.gridspec as gridspec
 
 # Plot Fig 1
@@ -143,7 +141,7 @@ ax1.text(x_conect, y_conect, s = gdir.rgi_id,
          color=sns.xkcd_rgb["black"],
          weight = 'black', fontsize=14)
 sm.set_scale_bar(location=(0.78, 0.04))
-sm.visualize(ax=ax1,  cbar_title='SMB mean 60-90 (mm. w.e)')
+sm.visualize(ax=ax1,  cbar_title='SMB mean 61-90 (mm. w.e)')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 ax1.add_artist(at)
 
@@ -192,7 +190,7 @@ sm.set_data(smb_avg_sel)
 sm.set_cmap('RdBu')
 sm.set_scale_bar(location=(0.78, 0.04))
 sm.set_lonlat_contours(interval=1)
-sm.visualize(ax=ax5,  cbar_title='SMB mean 60-90 (mm. w.e)')
+sm.visualize(ax=ax5,  cbar_title='SMB mean 61-90 (mm. w.e)')
 at = AnchoredText('f', prop=dict(size=18), frameon=True, loc=2)
 ax5.add_artist(at)
 

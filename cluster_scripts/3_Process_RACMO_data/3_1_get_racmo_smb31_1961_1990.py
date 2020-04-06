@@ -153,7 +153,7 @@ files_no_data = []
 for gdir in gdirs:
 
     utils_vel.process_racmo_data(gdir, racmo_path,
-                                 time_start=1960,
+                                 time_start=1961,
                                  time_end=1990)
 
     # We compute a calving flux from RACMO data
@@ -182,4 +182,4 @@ dr = {'RGI_ID': ids,
       'q_calving_RACMO_cum': racmo_calving_cum}
 
 df_r = pd.DataFrame(data=dr)
-df_r.to_csv(cfg.PATHS['working_dir']+'racmo_data_'+str(1960)+str(1960)+'_.csv')
+df_r.to_csv(cfg.PATHS['working_dir']+'racmo_data_'+str(1961)+str(1990)+'_.csv')

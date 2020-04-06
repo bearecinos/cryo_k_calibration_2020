@@ -22,7 +22,7 @@ RGI_FILE = os.path.join(MAIN_PATH,
 
 #print(full_dir_name)
 
-cfg.PATHS['working_dir'] = full_dir_name_one
+cfg.PATHS['working_dir'] = full_dir_name_two
 cfg.PARAMS['border'] = 20
 cfg.PARAMS['use_tar_shapefiles'] = False
 cfg.PARAMS['use_intersects'] = True
@@ -55,19 +55,19 @@ ids_rgi = d_no_sol.RGIId.values
 keep_no_solution = [(i not in ids_rgi) for i in rgidf.RGIId]
 rgidf = rgidf.iloc[keep_no_solution]
 
-no_vel_data = os.path.join(MAIN_PATH,
-        'output_data/5_calibration_vel_results/glaciers_with_no_vel_data.csv')
-d_no_data = pd.read_csv(no_vel_data)
-ids_no_data = d_no_data.RGIId.values
-keep_no_data = [(i not in ids_no_data) for i in rgidf.RGIId]
-rgidf = rgidf.iloc[keep_no_data]
-
-# no_racmo_data = os.path.join(MAIN_PATH,
-#     'output_data/6_racmo_calibration_results/glaciers_with_no_racmo_data.csv')
-# d_no_data = pd.read_csv(no_racmo_data)
+# no_vel_data = os.path.join(MAIN_PATH,
+#         'output_data/2_Process_vel_data/glaciers_with_no_velocity_data.csv')
+# d_no_data = pd.read_csv(no_vel_data)
 # ids_no_data = d_no_data.RGIId.values
 # keep_no_data = [(i not in ids_no_data) for i in rgidf.RGIId]
 # rgidf = rgidf.iloc[keep_no_data]
+
+no_racmo_data = os.path.join(MAIN_PATH,
+    'output_data/3_racmo/1960_1990/glaciers_with_no_racmo_data.csv')
+d_no_data = pd.read_csv(no_racmo_data)
+ids_no_data = d_no_data.RGIId.values
+keep_no_data = [(i not in ids_no_data) for i in rgidf.RGIId]
+rgidf = rgidf.iloc[keep_no_data]
 
 print(cfg.PATHS['working_dir'])
 
@@ -143,4 +143,4 @@ d = {'RGIId': pd.unique(ids),
  'volume bsl': vbsl_no_calving_per_dir,
  'volume bsl with calving': vbsl_calving_per_dir}
 data_frame = pd.DataFrame(data=d)
-data_frame.to_csv(os.path.join(full_dir_name_one,'volume_below_sea_level.csv'))
+data_frame.to_csv(os.path.join(full_dir_name_two,'volume_below_sea_level.csv'))

@@ -15,7 +15,7 @@ from velocity_tools import utils_velocity as utils_vel
 
 # Read RACMO data path
 racmo_output = os.path.join(MAIN_PATH,
-        'output_data/3_Process_RACMO_data/1960_1990/racmo_data_19601960_.csv')
+        'output_data/3_racmo/1960_1990/racmo_data_19611990_.csv')
 df_racmo = pd.read_csv(racmo_output)
 
 # Reading OGGM calibration results
