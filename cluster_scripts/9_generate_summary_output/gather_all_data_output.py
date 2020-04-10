@@ -23,7 +23,8 @@ if not os.path.exists(output_path):
 full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration',
-           '9_summary_output', '11_climate_stats', '12_volume_vsl'}
+           '9_summary_output', '11_climate_stats', '12_volume_vsl',
+           '13_non_calving'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -128,7 +129,7 @@ dk_vel.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 dk_racmo.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
 
 glac_stats_vel_plus = pd.merge(left=glac_stats_vel, right=dk_vel,
-                               how='inner', left_on = 'rgi_id',
+                               how='left', left_on = 'rgi_id',
                                right_on='rgi_id')
 
 glac_stats_racmo_plus = pd.merge(left=glac_stats_racmo, right=dk_racmo,
@@ -187,6 +188,7 @@ glac_stats_racmo_plus_filtered = glac_stats_racmo_plus[['rgi_id',
                                                         'dem_mean_elev',
                                                         'dem_min_elev',
                                                         'dem_min_elev_on_ext',
+                                                        'longuest_centerline_km',
                                                         'flowline_mean_elev',
                                                         'flowline_min_elev',
                                                         'flowline_avg_width',

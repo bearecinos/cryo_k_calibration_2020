@@ -42,14 +42,19 @@ df_both = pd.read_csv(os.path.join(output_dir_path,
                                 'glacier_stats_both_methods.csv'),
                       index_col='Unnamed: 0')
 
+print(df_both.columns)
 #df_both  = df_both.loc[df_both.k_value_MR != 0]
-
 
 df_both['diff_q'] = (df_both['calving_flux_MV'] - df_both['calving_flux_MR']).abs()
 
 df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
 
 df_both  = df_both.loc[df_both.diff_k != 0]
+
+df_both = df_both.loc[df_both.k_value_MR !=0]
+
+# print(df_both.rgi_area_km2.sum() / 28515.391 * 100)
+# exit()
 
 ## Get coordinates and data
 lat = df_both.cenlat.values
@@ -111,27 +116,27 @@ spec = gridspec.GridSpec(2, 2, wspace=0.5, hspace=0.3, width_ratios=widths,
 
 ax0 = plt.subplot(spec[0])
 sns.scatterplot(x='k_value_MR', y='k_value_MV', data=df_both, ax=ax0,
-                color=color_palette[3])
+                color=color_palette[0])
 ax0.set_xlabel('$k$ - RACMO \n [yr$^{-1}$]')
 ax0.set_ylabel('$k$ - velocities \n [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
 test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_k,
                     ".2f")) + '\np-value = ' + str(format(p_pearson_k,
                                                                 ".3E")),
-                    prop=dict(size=16), frameon=False, loc=4)
+                    prop=dict(size=18), frameon=False, loc=4)
 ax0.add_artist(at)
 ax0.add_artist(test)
 
 ax1 = plt.subplot(spec[1])
 sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', data=df_both, ax=ax1,
-                color=color_palette[4])
-ax1.set_xlabel('$q_{calving}$ - Racmo \n [$km^3$/yr]')
-ax1.set_ylabel('$q_{calving}$ - velocities \n [$km^3$/yr]')
+                color=color_palette[1])
+ax1.set_xlabel('$q_{calving}$ - Racmo \n [$km^3$yr$^{-1}$]')
+ax1.set_ylabel('$q_{calving}$ - velocities \n [$km^3$yr$^{-1}$]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_q,
                     ".2f")) + '\np-value = ' + str(format(p_pearson_q,
                                                                 ".3E")),
-                    prop=dict(size=16), frameon=False, loc=1)
+                    prop=dict(size=18), frameon=False, loc=1)
 ax1.add_artist(at)
 ax1.add_artist(test)
 
@@ -141,17 +146,17 @@ sm = ds_geo.salem.get_map(countries=False)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
 xx, yy = sm.grid.transform(lon, lat)
 
-ax2.scatter(xx, yy, 50**diff_k, alpha=0.6, color=color_palette[3],
-                                        edgecolor=color_palette[3])
+ax2.scatter(xx, yy, 60**diff_k, alpha=0.6, color=color_palette[0],
+                                        edgecolor=color_palette[0])
 
 # make legend with dummy points
 for a in [0.5, 1.0, 1.5]:
-    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=50**a,
+    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=60**a,
                 label=str(a) + 'yr$^{-1}$')
 ax2.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='lower right', fontsize=10.5,
+           labelspacing=1, loc='center', fontsize=14,
            title='$k$ differences',
-           title_fontsize=10);
+           title_fontsize=14);
 sm.set_scale_bar(location=(0.17, 0.02))
 sm.visualize(ax=ax2)
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
@@ -163,23 +168,22 @@ sm = ds_geo.salem.get_map(countries=False)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
 xx, yy = sm.grid.transform(lon, lat)
 
-ax3.scatter(xx, yy, 2000*diff_q, alpha=0.5, color=color_palette[4],
-                                        edgecolor=color_palette[4])
+ax3.scatter(xx, yy, 2000*diff_q, alpha=0.5, color=color_palette[1],
+                                        edgecolor=color_palette[1])
 
 # make legend with dummy points
 for a in [0.05, 0.1, 0.5]:
     ax3.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=2000*a,
-                label=str(a) + 'km$^{3}$/yr')
+                label=str(a) + 'km$^{3}$yr$^{-1}$')
 ax3.legend(scatterpoints=1, frameon=False,
-           labelspacing=1.5, loc='lower right', fontsize=11,
+           labelspacing=1.5, loc='center', fontsize=14,
            title='$q_{calving}$ differences',
-           title_fontsize=10);
+           title_fontsize=14);
 sm.visualize(ax=ax3)
 at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
 ax3.add_artist(at)
 
 plt.tight_layout()
+#plt.show()
 plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
-            bbox_inches='tight')
-# plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
-#             bbox_inches='tight')
+             bbox_inches='tight')

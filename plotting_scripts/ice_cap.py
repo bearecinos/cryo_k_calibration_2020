@@ -163,7 +163,7 @@ sm.set_data(dve_sel.data)
 sm.set_cmap(cmap)
 sm.set_scale_bar()
 sm.set_lonlat_contours(interval=1.5)
-sm.visualize(ax=ax2, cbar_title='m/yr')
+sm.visualize(ax=ax2, cbar_title='m $yr^{-1}$')
 at = AnchoredText('c', prop=dict(size=16), frameon=True, loc=2)
 ax2.add_artist(at)
 # make it nice

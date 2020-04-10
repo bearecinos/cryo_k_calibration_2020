@@ -7,7 +7,6 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-
 MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 
 import sys
@@ -80,13 +79,13 @@ df_common = pd.merge(left=config_one,
 #getting the common glaciers and making all a single data frame
 df_both_plus_prepro = pd.merge(left=df_both,
                     right=df_prepro,
-                    how='inner',
+                    how='left',
                     left_on = 'rgi_id',
                     right_on='rgi_id')
 
 df_all = pd.merge(left=df_both_plus_prepro,
                   right=df_common,
-                  how='inner',
+                  how='left',
                   left_on='rgi_id',
                   right_on='rgi_id')
 
@@ -107,6 +106,8 @@ racmo_volume_bsl_c = df_all['vol_bsl_wc_MR'].sum()
 
 fari_volume = df_all_plus_fari['vol_itmix_km3'].sum()
 fari_volume_bsl = df_all_plus_fari['vol_bsl_itmix_km3'].sum()
+
+print(df_all_plus_fari.rgi_id)
 
 exp_name = ['Farinotti et al. (2019)',
             'Without calving',

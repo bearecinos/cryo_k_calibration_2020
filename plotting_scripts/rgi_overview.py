@@ -90,7 +90,7 @@ full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration', '7_calving_vel_calibrated',
            '8_calving_racmo_calibrated',
-           '11_climate_stats', '12_volume_vsl'}
+           '11_climate_stats', '12_volume_vsl', '13_non_calving'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -141,7 +141,7 @@ k = {'Category': category_two,
 dk = pd.DataFrame(data=k)
 
 print(dk)
-
+exit()
 ##############################################################################
 
 import matplotlib.gridspec as gridspec

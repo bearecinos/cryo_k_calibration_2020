@@ -126,7 +126,7 @@ ax0.scatter(x_conect, y_conect, s=80, marker="o", color='red')
 ax0.text(x_conect, y_conect, s = gdir.rgi_id,
          color=sns.xkcd_rgb["white"],
          weight = 'black', fontsize=14)
-sm.visualize(ax=ax0, cbar_title='Velocity m/yr')
+sm.visualize(ax=ax0, cbar_title='Velocity [m$yr^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
 ax0.add_artist(at)
 
@@ -141,7 +141,7 @@ ax1.text(x_conect, y_conect, s = gdir.rgi_id,
          color=sns.xkcd_rgb["black"],
          weight = 'black', fontsize=14)
 sm.set_scale_bar(location=(0.78, 0.04))
-sm.visualize(ax=ax1,  cbar_title='SMB mean 61-90 (mm. w.e)')
+sm.visualize(ax=ax1,  cbar_title='SMB mean 61-90 [mm. w.e.]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 ax1.add_artist(at)
 
@@ -178,7 +178,7 @@ sm.set_shapefile(shp, color='r')
 sm.set_data(dvel_sel.data)
 sm.set_cmap('viridis')
 sm.set_lonlat_contours(interval=1)
-sm.visualize(ax=ax4, cbar_title='Velocity m/yr')
+sm.visualize(ax=ax4, cbar_title='Velocity [m$yr^{-1}$]')
 at = AnchoredText('e', prop=dict(size=18), frameon=True, loc=2)
 ax4.add_artist(at)
 
@@ -190,7 +190,7 @@ sm.set_data(smb_avg_sel)
 sm.set_cmap('RdBu')
 sm.set_scale_bar(location=(0.78, 0.04))
 sm.set_lonlat_contours(interval=1)
-sm.visualize(ax=ax5,  cbar_title='SMB mean 61-90 (mm. w.e)')
+sm.visualize(ax=ax5,  cbar_title='SMB mean 61-90 [mm. w.e.]')
 at = AnchoredText('f', prop=dict(size=18), frameon=True, loc=2)
 ax5.add_artist(at)
 

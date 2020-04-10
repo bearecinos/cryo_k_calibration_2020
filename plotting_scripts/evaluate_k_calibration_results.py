@@ -147,8 +147,8 @@ test = AnchoredText('Area % = '+ str(format(Num, ".2f")) +
                     '\n b1 = '+ str(format(intercept, ".2f")) +
                     '\n r$^2$ = '+ str(format(r_value, ".2f")) +
                     '\n p-value = ' + str(format(p_value, ".3E"))+
-                    '\n RMSD = ' + str(format(RMSD, ".2f")) + ' m/yr' +
-                    '\n Bias = ' + str(format(mean_dev, ".2f")) + ' m/yr',
+                    '\n RMSD = ' + str(format(RMSD, ".2f")) + ' m $yr^{-1}$' +
+                    '\n Bias = ' + str(format(mean_dev, ".2f")) + ' m $yr^{-1}$',
                     prop=dict(size=18), frameon=False, loc=1)
 
 z = np.arange(0, len(df_vel_result), 1)
@@ -188,8 +188,8 @@ test_racmo = AnchoredText('Area % = '+ str(format(Num_r, ".2f")) +
                     '\n b1 = '+ str(format(intercept_r, ".4f")) +
                     '\n r$^2$ = '+ str(format(r_value_r, ".4f")) +
                     '\n p-value = ' + str(format(p_value_r, ".3E"))+
-                    '\n RMSD = ' + str(format(RMSD_racmo, ".4f")) + ' $km^3$/yr' +
-                    '\n Bias = ' + str(format(mean_dev_racmo, ".4f")) + ' $km^3$/yr',
+                    '\n RMSD = ' + str(format(RMSD_racmo, ".4f")) + ' $km^{3}$$yr^{-1}$' +
+                    '\n Bias = ' + str(format(mean_dev_racmo, ".4f")) + ' $km^{3}$$yr^{-1}$',
                     prop=dict(size=18), frameon=False, loc=1)
 
 negative_area = AnchoredText('Area % = \n ' + str(format(negative_percet, ".2f")),
@@ -218,8 +218,8 @@ ax0.errorbar(df_vel_result.u_obs, df_vel_result.u_surf,
             color=color_palette[0], ecolor=sns.xkcd_rgb["light grey"],
             elinewidth=1.5)
 ax0.plot(z, zline)
-ax0.set_xlabel('Observed surface velocities \n [m/yr]')
-ax0.set_ylabel('OGGM modeled surface velocities \n [m/yr]')
+ax0.set_xlabel('Observed surface velocities \n [m $yr^{-1}$]')
+ax0.set_ylabel('OGGM modeled surface velocities \n [m $yr^{-1}$]')
 at = AnchoredText('a', prop=dict(size=16), frameon=True, loc=2)
 ax0.add_artist(at)
 ax0.add_artist(test)
@@ -231,8 +231,8 @@ ax1.errorbar(df_racmo_result.racmo_flux, df_racmo_result.calving_flux,
             color=color_palette[1])
 ax1.plot(x_r, line_r, color=color_palette[1])
 ax1.axvline(0, color='k', linestyle='--')
-ax1.set_xlabel('RACMO frontal ablation \n [$km^3$/yr]')
-ax1.set_ylabel('OGGM modeled frontal ablation \n [$km^3$/yr]')
+ax1.set_xlabel('RACMO frontal ablation \n [$km^{3}$$yr^{-1}$]')
+ax1.set_ylabel('OGGM modeled frontal ablation \n [$km^{3}$$yr^{-1}$]')
 at = AnchoredText('b', prop=dict(size=16), frameon=True, loc=2)
 ax1.add_artist(at)
 ax1.add_artist(test_racmo)
