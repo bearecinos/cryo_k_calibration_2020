@@ -23,6 +23,14 @@ output_dir_path = os.path.join(MAIN_PATH, 'output_data/9_summary_output/')
 df_both = pd.read_csv(os.path.join(output_dir_path,
                                 'glacier_stats_both_methods.csv'))
 
+df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
+
+df_both  = df_both.loc[df_both.diff_k != 0]
+
+df_both = df_both.loc[df_both.k_value_MR !=0]
+
+#df_both = df_both.loc[df_both.k_value_MR !=0]
+
 # Classify the glaciers by area classes
 df_both["area_class"] = np.digitize(df_both["rgi_area_km2"],
                                     [0, 5, 15, 50, 1300],

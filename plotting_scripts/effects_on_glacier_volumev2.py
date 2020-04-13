@@ -35,6 +35,8 @@ df_vel = pd.read_csv(os.path.join(output_dir_path,
 df_racmo = pd.read_csv(os.path.join(output_dir_path,
                                       'glacier_stats_racmo_method.csv'))
 
+df_racmo = df_racmo.loc[df_racmo.calving_flux_y !=0]
+
 # Reading results without calving
 prepo_dir_path = os.path.join(MAIN_PATH, 'output_data/1_Greenland_prepo/')
 df_prepro = pd.read_csv(os.path.join(prepo_dir_path,
@@ -119,29 +121,49 @@ df_vel_with_fari = pd.merge(left=df_vel_vbsl,
                     left_on = 'rgi_id',
                     right_on='rgi_id')
 
+# Merged glaciers
+df_merged_with_fari = pd.merge(left=df_racmo_with_fari,
+                    right=df_vel_with_fari,
+                    how='inner',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
+
+#print(df_merged_with_fari.columns.values)
+
 #print(df_racmo_with_fari.columns)
 Num_glacier = np.array([len(df_vel_with_fari.rgi_id),
                       len(df_vel_with_fari.rgi_id),
                       len(df_vel_with_fari.rgi_id),
                       len(df_racmo_with_fari.rgi_id),
                       len(df_racmo_with_fari.rgi_id),
-                      len(df_racmo_with_fari.rgi_id)])
+                      len(df_racmo_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id)])
 print(Num_glacier)
 
-vol_exp = np.array([df_vel_with_fari['inv_volume_km3_no_calving'].sum(),
-                    df_vel_with_fari['vol_itmix_km3'].sum(),
+vol_exp = np.array([df_vel_with_fari['vol_itmix_km3'].sum(),
+                    df_vel_with_fari['inv_volume_km3_no_calving'].sum(),
                     df_vel_with_fari['inv_volume_km3'].sum(),
-                    df_racmo_with_fari['inv_volume_km3_no_calving'].sum(),
                     df_racmo_with_fari['vol_itmix_km3'].sum(),
-                    df_racmo_with_fari['inv_volume_km3'].sum()])
+                    df_racmo_with_fari['inv_volume_km3_no_calving'].sum(),
+                    df_racmo_with_fari['inv_volume_km3'].sum(),
+                    df_merged_with_fari['vol_itmix_km3_x'].sum(),
+                    df_merged_with_fari['inv_volume_km3_no_calving_x'].sum(),
+                    df_merged_with_fari['inv_volume_km3_y'].sum(),
+                    df_merged_with_fari['inv_volume_km3_x'].sum()])
 
 
-vol_bsl_exp = np.array([df_vel_with_fari['vol_bsl_MV'].sum(),
-                    df_vel_with_fari['vol_bsl_itmix_km3'].sum(),
-                    df_vel_with_fari['vol_bsl_wc_MV'].sum(),
-                    df_racmo_with_fari['vol_bsl_MR'].sum(),
-                    df_racmo_with_fari['vol_bsl_itmix_km3'].sum(),
-                    df_racmo_with_fari['vol_bsl_wc_MR'].sum()])
+vol_bsl_exp = np.array([df_vel_with_fari['vol_bsl_itmix_km3'].sum(),
+                        df_vel_with_fari['vol_bsl_MV'].sum(),
+                        df_vel_with_fari['vol_bsl_wc_MV'].sum(),
+                        df_racmo_with_fari['vol_bsl_itmix_km3'].sum(),
+                        df_racmo_with_fari['vol_bsl_MR'].sum(),
+                        df_racmo_with_fari['vol_bsl_wc_MR'].sum(),
+                       df_merged_with_fari['vol_bsl_itmix_km3_x'].sum(),
+                       df_merged_with_fari['vol_bsl_MR'].sum(),
+                       df_merged_with_fari['vol_bsl_wc_MV'].sum(),
+                       df_merged_with_fari['vol_bsl_wc_MR'].sum()])
 
 vol_exp_sle = []
 for vol in vol_exp:
@@ -154,67 +176,65 @@ for vol_bsl in vol_bsl_exp:
     vol_bsl_exp_sle = np.append(vol_bsl_exp_sle, sle)
 
 print(vol_exp)
-
-percentage_of_diff = [utils_vel.calculate_volume_percentage(vol_exp[0], vol_exp[2]),
-                     utils_vel.calculate_volume_percentage(vol_exp[1], vol_exp[2]),
-                     utils_vel.calculate_volume_percentage(vol_exp[3], vol_exp[5]),
-                     utils_vel.calculate_volume_percentage(vol_exp[4],  vol_exp[5]),
-                     utils_vel.calculate_volume_percentage(vol_exp[5], vol_exp[2])]
+## TODO: CALCULATE ALL DIFF BETWEEN VOLUMES!!! 
+percentage_of_diff = [utils_vel.calculate_volume_percentage(vol_exp[1], vol_exp[2]),
+                     utils_vel.calculate_volume_percentage(vol_exp[4], vol_exp[5]),
+                     utils_vel.calculate_volume_percentage(vol_exp[9], vol_exp[8])]
+                     # utils_vel.calculate_volume_percentage(vol_exp[4],  vol_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_exp[5], vol_exp[2])]
 print(percentage_of_diff)
 
-percentage_of_diff_vbsl = [utils_vel.calculate_volume_percentage(vol_bsl_exp[0], vol_bsl_exp[2]),
-                     utils_vel.calculate_volume_percentage(vol_bsl_exp[1], vol_bsl_exp[2]),
-                     utils_vel.calculate_volume_percentage(vol_bsl_exp[3], vol_bsl_exp[5]),
-                     utils_vel.calculate_volume_percentage(vol_bsl_exp[4],  vol_bsl_exp[5]),
-                     utils_vel.calculate_volume_percentage(vol_bsl_exp[5], vol_bsl_exp[2])]
+percentage_of_diff_vbsl = [utils_vel.calculate_volume_percentage(vol_bsl_exp[1], vol_bsl_exp[2]),
+                     utils_vel.calculate_volume_percentage(vol_bsl_exp[4], vol_bsl_exp[5]),
+                     utils_vel.calculate_volume_percentage(vol_bsl_exp[9], vol_bsl_exp[8])]
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[4],  vol_bsl_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[5], vol_bsl_exp[2])]
 print(percentage_of_diff_vbsl)
 
 
-print('----------- For de paper more information ------------------')
-print('Mean and std volume with calving for all config',
-      np.round(np.mean([vol_exp_sle[2], vol_exp_sle[5]]), 2),
-      np.round(np.std([vol_exp_sle[2], vol_exp_sle[5]]), 2))
-
-print('Mean and std volume no calving for all config',
-      np.round(np.mean([vol_exp_sle[0], vol_exp_sle[3]]), 2),
-      np.round(np.std([vol_exp_sle[0], vol_exp_sle[3]]), 2))
-
-print('Mean and std volume below sea level with calving',
-      np.round(np.mean([vol_bsl_exp_sle[2], vol_bsl_exp_sle[5]]), 2),
-      np.round(np.std([vol_bsl_exp_sle[2], vol_bsl_exp_sle[5]]), 2))
-
-print('Mean and std volume below sea level without calving',
-      np.round(np.mean([vol_bsl_exp_sle[0], vol_bsl_exp_sle[3]]), 2),
-      np.round(np.std([vol_bsl_exp_sle[0], vol_bsl_exp_sle[3]]), 2))
-
-
 print('For the paper check if the volume below sea level is bigger than diff among config.')
-print(vol_bsl_exp[2] > vol_bsl_exp[0])
-print(vol_bsl_exp[5] > vol_bsl_exp[3])
+print('Differences in volume below sea level ')
+print(abs(vol_bsl_exp_sle[9]-vol_bsl_exp_sle[8]))
+print(abs(vol_bsl_exp_sle[7]-vol_bsl_exp_sle[8]))
+print(abs(vol_bsl_exp_sle[7]-vol_bsl_exp_sle[9]))
 
-diff_config = abs(vol_exp_sle[2]-vol_exp_sle[5])
-diff_vbsl_one = abs(vol_bsl_exp_sle[0]-vol_bsl_exp_sle[2])
-diff_vbsl_two = abs(vol_bsl_exp_sle[3]-vol_bsl_exp_sle[5])
-print(diff_config)
-print(diff_vbsl_one)
-print(diff_vbsl_two)
+print('Differences in volume')
+print(abs(vol_exp_sle[9]-vol_exp_sle[8]))
+print(abs(vol_exp_sle[7]-vol_exp_sle[8]))
+print(abs(vol_exp_sle[7]-vol_exp_sle[9]))
 
+print(str(vol_exp_sle[7]) + 'increase to ' + str(vol_exp_sle[8])+ ' when using vel method')
+print(str(vol_exp_sle[7]) + 'increase to ' + str(vol_exp_sle[9])+ ' when using RACMO method')
+print('farinotti '+str(vol_exp_sle[6]))
 
+print(str(vol_bsl_exp_sle[7]) + 'increase to ' + str(vol_bsl_exp_sle[8])+ ' when using vel method')
+print(str(vol_bsl_exp_sle[7]) + 'increase to ' + str(vol_bsl_exp_sle[9])+ ' when using RACMO method')
+print('farinotti '+str(vol_bsl_exp_sle[6]))
+
+print('Percentage farinotti compared to RACMO and Vel')
+print('to vel method '+ str(utils_vel.calculate_volume_percentage(vol_exp[6],
+                                                                  vol_exp[8])))
+print('to RACMO method '+ str(utils_vel.calculate_volume_percentage(vol_exp[6],
+                                                                  vol_exp[9])))
+
+exit()
 fig = plt.figure(figsize=(12, 8))
 sns.set(style="white", context="talk")
 
 ax1=fig.add_subplot(111)
 color_palette = sns.color_palette("deep")
 
-color_array = [color_palette[2], color_palette[3],
-               color_palette[0], color_palette[2],
-               color_palette[3], color_palette[1]]
+color_array = [color_palette[3], color_palette[2],
+               color_palette[0], color_palette[3],
+               color_palette[2], color_palette[1],
+               color_palette[3], color_palette[2],
+               color_palette[0], color_palette[1]]
 
 ax2= ax1.twiny()
 
 # Example data
 y_pos = np.arange(len(vol_exp))
-y_pos = [0,0.5,1,2,2.5,3]
+y_pos = [0,0.5,1,2,2.5,3,4,4.5,5,5.5]
 
 
 p1 = ax1.barh(y_pos, vol_bsl_exp*-1, align='center', color=sns.xkcd_rgb["grey"],
@@ -241,11 +261,11 @@ ax2.set_xticklabels(sle, fontsize=20)
 ax2.set_xlabel('Volume [mm SLE]', fontsize=18)
 
 plt.legend((p2[0], p2[1], p2[2], p2[5]),
-           ('Without $q_{calving}$',
-            'Farinotti et al. (2019)',
-            'With $q_{calving}$ - velocity, No. glaciers = 396',
-            'With $q_{calving}$ - RACMO, No. glaciers = 330'),
-            frameon=True, bbox_to_anchor=(0.95, -0.2), ncol=2)
+           ('Farinotti et al. (2019)',
+            'Without $q_{calving}$',
+            'With $q_{calving}$ - velocity',
+            'With $q_{calving}$ - RACMO'),
+            frameon=True, bbox_to_anchor=(0.8, -0.2), ncol=2)
             #bbox_to_anchor=(1.1, -0.15), ncol=5, fontsize=15)
 
 plt.margins(0.05)

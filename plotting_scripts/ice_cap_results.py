@@ -80,7 +80,7 @@ def plot_inversion(gdirs, ax=None, smap=None, linewidth=3, vmax=None):
             vol.extend(c['volume'])
 
     dl = salem.DataLevels(cmap=colormap.get_cmap('YlOrRd'), nlevels=256,
-                          data=toplot_th)  # , vmin=, vmax=vmax)
+                          data=toplot_th, vmin=0, vmax=400, extend='max')
     colors = dl.to_rgb()
     for l, c, crs in zip(toplot_lines, colors, toplot_crs):
         smap.set_geometry(l, crs=crs, color=c,
@@ -239,27 +239,28 @@ for vol_bsl in vol_bsl_exp:
     vol_bsl_exp_sle = np.append(vol_bsl_exp_sle, sle)
 
 print(vol_exp)
-
+## TODO: CALCULATE ALL DIFF BETWEEN VOLUMES!!!
 percentage_of_diff = [utils_vel.calculate_volume_percentage(vol_exp[0], vol_exp[1]),
                      utils_vel.calculate_volume_percentage(vol_exp[0], vol_exp[2]),
                      utils_vel.calculate_volume_percentage(vol_exp[2], vol_exp[1])]
+                     # utils_vel.calculate_volume_percentage(vol_exp[4],  vol_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_exp[5], vol_exp[2])]
 print(percentage_of_diff)
 
 percentage_of_diff_vbsl = [utils_vel.calculate_volume_percentage(vol_bsl_exp[0], vol_bsl_exp[1]),
                      utils_vel.calculate_volume_percentage(vol_bsl_exp[0], vol_bsl_exp[2]),
                      utils_vel.calculate_volume_percentage(vol_bsl_exp[2], vol_bsl_exp[1])]
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[4],  vol_bsl_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[5], vol_bsl_exp[2])]
 print(percentage_of_diff_vbsl)
 
 
+print(str(vol_exp_sle[0]) + 'increase to ' + str(vol_exp_sle[1])+ ' when using vel method')
+print(str(vol_exp_sle[0]) + 'increase to ' + str(vol_exp_sle[2])+ ' when using RACMO method')
 
-print('For the paper check if the volume below sea level is bigger than diff among config.')
-diff_config = abs(vol_exp_sle[1]-vol_exp_sle[2])
-diff_vbsl_one = abs(vol_bsl_exp_sle[0]-vol_bsl_exp_sle[1])
-diff_vbsl_two = abs(vol_bsl_exp_sle[0]-vol_bsl_exp_sle[2])
-print(diff_config)
-print(diff_vbsl_one)
-print(diff_vbsl_two)
-
+print(str(vol_bsl_exp_sle[0]) + 'increase to ' + str(vol_bsl_exp_sle[1])+ ' when using vel method')
+print(str(vol_bsl_exp_sle[0]) + 'increase to ' + str(vol_bsl_exp_sle[2])+ ' when using RACMO method')
+exit()
 ################# Initialise new dir ########################################
 ids = df_racmo.rgi_id.values
 
@@ -356,7 +357,7 @@ plot_inversion(gdirs_one, ax=ax3, smap=sm,
                         title='')
 sm.set_lonlat_contours(interval=3)
 sm.visualize(ax=ax3, addcbar=False)
-at = AnchoredText('c', prop=dict(size=16), frameon=True, loc=2)
+at = AnchoredText('b', prop=dict(size=16), frameon=True, loc=2)
 ax3.add_artist(at)
 
 ax4 = plt.subplot(spec[-1, 1])
@@ -367,7 +368,7 @@ plot_inversion(gdirs_two, ax=ax4, smap=sm,
                         title='')
 sm.set_lonlat_contours(interval=3)
 sm.visualize(ax=ax4, addcbar=False)
-at = AnchoredText('d', prop=dict(size=16), frameon=True, loc=2)
+at = AnchoredText('c', prop=dict(size=16), frameon=True, loc=2)
 ax4.add_artist(at)
 
 # make it nice
