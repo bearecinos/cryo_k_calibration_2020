@@ -50,7 +50,7 @@ g0 = sns.catplot(x="area_class", y="k_value", hue='Method',
 ax0.set_xticklabels(labels=['0-5', '5-15', '15-50', '50-1300'])
 ax0.set_xlabel('Area class [$km^2$]')
 ax0.set_ylabel('$k$ [$yr^{-1}$]')
-at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
 ax0.add_artist(at)
 
 # replace labels
@@ -65,7 +65,7 @@ g1 = sns.catplot(x="area_class", y="calving_flux", hue='Method',
 ax1.set_xticklabels(labels=['0-5', '5-15', '15-50', '50-1300'])
 ax1.set_xlabel('Area class [$km^2$]')
 ax1.set_ylabel('$q_{calving}$ [$km^3$/yr]')
-at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 ax1.add_artist(at)
 
 # replace labels

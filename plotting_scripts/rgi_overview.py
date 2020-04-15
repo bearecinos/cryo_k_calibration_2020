@@ -9,6 +9,7 @@ import pandas as pd
 os.getcwd()
 import geopandas as gpd
 from collections import OrderedDict
+from matplotlib.offsetbox import AnchoredText
 from matplotlib import rcParams
 
 MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
@@ -141,7 +142,7 @@ k = {'Category': category_two,
 dk = pd.DataFrame(data=k)
 
 print(dk)
-exit()
+
 ##############################################################################
 
 import matplotlib.gridspec as gridspec
@@ -173,6 +174,8 @@ smap.set_shapefile(sub_conect, facecolor=sns.xkcd_rgb["navy blue"],
                    edgecolor=None)
 smap.set_scale_bar(location=(0.78, 0.04))
 smap.visualize(ax=ax0)
+at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+ax0.add_artist(at)
 
 
 ax1 = plt.subplot(spec[1])
@@ -213,6 +216,8 @@ ax1.get_legend().remove()
 handles, labels = ax1.get_legend_handles_labels()
 fig.legend(handles, labels, loc='upper center',
             ncol=3, fontsize=11)
+at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+ax1.add_artist(at)
 
 ax2 = plt.subplot(spec[2])
 palette = sns.color_palette("colorblind")
@@ -264,6 +269,8 @@ ax2.legend((p5[0], p1[0], p2[0], p3[0], p4[0]),
             'Without velocity data',
             'Without RACMO data'), loc='lower right', frameon=True,
            facecolor='white', fancybox=False, fontsize=9.5)
+at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
+ax2.add_artist(at)
 
 plt.tight_layout()
 plt.savefig(os.path.join(plot_path, 'rgi_overview.pdf'),
