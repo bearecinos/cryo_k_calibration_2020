@@ -16,7 +16,7 @@ The content of the repository is the following:
 ## External libraries that are not in the OGGM env:    
 
 **III. velocity_tools** (calibration toolbox)
-The velocity_tools is a collection of scripts to read in velocity observations and RACMO data. utils_velocity.py contains a collection of functions used to re-project these observations to the OGGM glacier grid and calibrate the $k$ parameter in OGGM calving law.
+The velocity_tools is a collection of scripts to read in velocity observations and RACMO data. utils_velocity.py contains a collection of functions used to re-project these observations to the OGGM glacier grid and calibrate the *k* parameter in OGGM calving law.
 
 ADD LICENSE AND CITATION LATER
 
