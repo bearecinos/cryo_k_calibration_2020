@@ -11,9 +11,9 @@ os.getcwd()
 MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 
 # PARAMS for plots
-rcParams['axes.labelsize'] = 12
-rcParams['xtick.labelsize'] = 12
-rcParams['ytick.labelsize'] = 12
+rcParams['axes.labelsize'] = 25
+rcParams['xtick.labelsize'] = 25
+rcParams['ytick.labelsize'] = 25
 sns.set_context('poster')
 
 plot_path = os.path.join(MAIN_PATH, 'plots/')
@@ -44,41 +44,43 @@ to_plot_q = to_plot_q.melt('area_class',
 to_plot_k = to_plot_k.melt('area_class',
                            var_name='Method',  value_name='k_value')
 
-fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(18, 10))
+fig, (ax0, ax1) = plt.subplots(1, 2, figsize=(14, 8))
+
 g0 = sns.catplot(x="area_class", y="k_value", hue='Method',
                  data=to_plot_k, kind='box', ax=ax0, legend=True)
 ax0.set_xticklabels(labels=['0-5', '5-15', '15-50', '50-1300'])
 ax0.set_xlabel('Area class [$km^2$]')
 ax0.set_ylabel('$k$ [$yr^{-1}$]')
-at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+at = AnchoredText('a', prop=dict(size=22), frameon=True, loc=2)
 ax0.add_artist(at)
 
 # replace labels
 ax0.get_legend().remove()
 handles, labels = ax0.get_legend_handles_labels()
-ax0.legend(handles, ['$k$ velocities',
-                     '$k$ RACMO'], loc='upper right', fontsize=18)
+ax0.legend(handles, ['$k_{velo}$',
+                     '$k_{RACMO}$'], loc=6, fontsize=22)
 
-
+ax1.set_yscale("log")
 g1 = sns.catplot(x="area_class", y="calving_flux", hue='Method',
                  data=to_plot_q, kind='box', ax=ax1, legend=True)
 ax1.set_xticklabels(labels=['0-5', '5-15', '15-50', '50-1300'])
 ax1.set_xlabel('Area class [$km^2$]')
-ax1.set_ylabel('$q_{calving}$ [$km^3$/yr]')
-at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+ax1.set_ylabel('$q_{calving}$ [$km^3yr^{-1}$]')
+at = AnchoredText('b', prop=dict(size=22), frameon=True, loc=2)
 ax1.add_artist(at)
 
 # replace labels
 ax1.get_legend().remove()
 handles, labels = ax1.get_legend_handles_labels()
-ax1.legend(handles, ['$q_{calving}$ velocities',
-                     '$q_{calving}$ RACMO'], loc='upper center', fontsize=18)
+ax1.legend(handles, ['$q_{calving-velo}$',
+                     '$q_{calving-RACMO}$'], loc=9, fontsize=22)
 
 plt.close(2)
 plt.close(3)
 
 plt.tight_layout()
-plt.savefig(os.path.join(plot_path, 'box_plot.jpg'),
-            bbox_inches='tight')
+# plt.show()
+# plt.savefig(os.path.join(plot_path, 'box_plot.jpg'),
+#             bbox_inches='tight')
 plt.savefig(os.path.join(plot_path, 'box_plot.pdf'),
             bbox_inches='tight')

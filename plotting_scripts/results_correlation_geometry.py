@@ -7,7 +7,11 @@ from scipy import stats
 import seaborn as sns
 import pandas as pd
 import numpy as np
+from scipy import optimize
 os.getcwd()
+
+def func(x, a, b):
+    return a*np.exp(b*x)
 
 MAIN_PATH = os.path.expanduser('~/cryo_k_calibration_2020/')
 
@@ -61,6 +65,23 @@ corr_vel_k_w, p_vel_k_w = stats.pearsonr(df_vel.k_value_MV,
 corr_vel_k_p, p_vel_k_p = stats.pearsonr(df_vel.k_value_MV,
                                  df_vel.total_prcp_top)
 
+### poly fit for slope
+a_v, b_v, c_v = np.polyfit(df_vel.calving_slope, df_vel.k_value_MV, 2)
+x_v = np.linspace(0, max(df_vel.calving_slope), 100)
+# y = ax^2 + bx + c
+y_v = a_v*(x_v**2) + b_v*x_v + c_v
+
+eq_v = '\ny = ' + str(np.around(a_v, decimals=2))+'x^2 '+ str(np.around(b_v,
+                            decimals=2))+'x +'+ str(np.around(c_v, decimals=2))
+
+## exponential fit for slope
+initial_guess = [0.1, 1]
+popt_v, pcov_v = optimize.curve_fit(func, df_vel.calving_slope, df_vel.k_value_MV, initial_guess)
+x_fit_v = np.linspace(0, max(df_vel.calving_slope), 100)
+
+eq_exp_v = '\ny = ' + str(np.around(popt_v[0], decimals=2))+'e$^{'+ str(np.around(popt_v[1],
+                            decimals=2))+'x}$'
+
 df_vel.rename(columns={'k_value_MV': 'k_value'}, inplace=True)
 df_vel['Method'] = np.repeat('Velocity', len(df_vel.k_value))
 
@@ -79,6 +100,22 @@ corr_racmo_k_w, p_racmo_k_w = stats.pearsonr(df_racmo.k_value_MR,
                                  df_racmo.calving_front_width)
 corr_racmo_k_p, p_racmo_k_p = stats.pearsonr(df_racmo.k_value_MR,
                                  df_racmo.total_prcp_top)
+
+### poly fit for slope
+a_r, b_r, c_r = np.polyfit(df_racmo.calving_slope, df_racmo.k_value_MR, 2)
+x_r = np.linspace(0, max(df_racmo.calving_slope), 100)
+# y = ax^2 + bx + c
+y_r = a_r*(x_r**2) + b_r*x_r + c_r
+
+eq_r = 'y = ' + str(np.around(a_r, decimals=2))+'x^2 '+ str(np.around(b_r,
+                            decimals=2))+'x +'+ str(np.around(c_r, decimals=2))
+
+## exponential fit for slope
+popt_r, pcov_r = optimize.curve_fit(func, df_racmo.calving_slope, df_racmo.k_value_MR, initial_guess)
+x_fit_r = np.linspace(0, max(df_racmo.calving_slope), 100)
+
+eq_exp_r = 'y = ' + str(np.around(popt_r[0], decimals=2))+'e$^{'+ str(np.around(popt_r[1],
+                            decimals=2))+'x}$'
 
 df_racmo.rename(columns={'k_value_MR': 'k_value'}, inplace=True)
 df_racmo['Method'] = np.repeat('RACMO', len(df_racmo.k_value))
@@ -115,16 +152,18 @@ spec = gridspec.GridSpec(2, 2)
 
 ax0 = plt.subplot(spec[0])
 sns.scatterplot(x='calving_slope', y='k_value', data=data_all, hue='Method',
-                ax=ax0)
+                ax=ax0, alpha=0.7)
+# ax0.plot(x_v, y_v) # y = ax^2 + bx + c
+# ax0.plot(x_r, y_r)
+ax0.plot(x_fit_v, func(x_fit_v, *popt_v))
+ax0.plot(x_fit_r, func(x_fit_r, *popt_r))
 ax0.set_xlabel('calving front slope angle \n [$^{o}$]')
 ax0.set_ylabel('$k$ \n [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
-test1 = AnchoredText('$r_{s}$ = '+ str(np.around(corr_racmo_k_s, decimals=3)) +
-                     '\np-value = ' + str(format(p_racmo_k_s, ".3E")) +
-                     '\n$r_{s}$ = ' + str(np.around(corr_vel_k_s, decimals=3)) +
-                     '\np-value = ' + str(format(p_vel_k_s, ".3E")),
-                    prop=dict(size=16),
-                    frameon=True, loc=6,
+test1 = AnchoredText(eq_exp_r +
+                     eq_exp_v,
+                    prop=dict(size=18),
+                    frameon=True, loc=9,
                     bbox_transform=ax0.transAxes)
 test1.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
 
@@ -135,7 +174,7 @@ ax0.get_legend().remove()
 
 ax1 = plt.subplot(spec[1])
 sns.scatterplot(x='calving_free_board', y='k_value', data=data_all, hue='Method',
-                ax=ax1)
+                ax=ax1, alpha=0.7)
 ax1.set_xlabel('freeboard \n [m]')
 ax1.set_ylabel('$k$ \n [yr$^{-1}$]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
@@ -143,7 +182,7 @@ test1 = AnchoredText('$r_{s}$ = '+ str(np.around(corr_racmo_k_f, decimals=3)) +
                      '\np-value = ' + str(format(p_racmo_k_f, ".3E")) +
                      '\n$r_{s}$ = ' + str(np.around(corr_vel_k_f, decimals=3)) +
                      '\np-value = ' + str(format(p_vel_k_f, ".3E")),
-                    prop=dict(size=16),
+                    prop=dict(size=18),
                     frameon=True, loc=1,
                     bbox_transform=ax1.transAxes)
 test1.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -153,7 +192,7 @@ ax1.get_legend().remove()
 
 ax2 = plt.subplot(spec[2])
 sns.scatterplot(x='calving_front_width', y='k_value', data=data_all, hue='Method',
-                ax=ax2)
+                ax=ax2, alpha=0.7)
 ax2.set_xlabel('calving front width \n [km]')
 ax2.set_ylabel('$k$ \n [yr$^{-1}$]')
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
@@ -161,7 +200,7 @@ test1 = AnchoredText('$r_{s}$ = '+ str(np.around(corr_racmo_k_w, decimals=3)) +
                      '\np-value = ' + str(format(p_racmo_k_w, ".3E")) +
                      '\n$r_{s}$ = ' + str(np.around(corr_vel_k_w, decimals=3)) +
                      '\np-value = ' + str(format(p_vel_k_w, ".3E")),
-                    prop=dict(size=16),
+                    prop=dict(size=18),
                     frameon=True, loc=1,
                     bbox_transform=ax2.transAxes)
 test1.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -171,7 +210,7 @@ ax2.get_legend().remove()
 
 ax3 = plt.subplot(spec[3])
 sns.scatterplot(x='total_prcp_top', y='k_value', data=data_all, hue='Method',
-                ax=ax3)
+                ax=ax3, alpha=0.7)
 ax3.set_xlabel('Avg. total solid prcp \n [mm/yr]')
 ax3.set_ylabel('$k$ \n [yr$^{-1}$]')
 ax3.xaxis.set_major_locator(plt.MaxNLocator(3))
@@ -180,7 +219,7 @@ test1 = AnchoredText('$r_{s}$ = '+ str(np.around(corr_racmo_k_p, decimals=3)) +
                      '\np-value = ' + str(format(p_racmo_k_p, ".3E")) +
                      '\n$r_{s}$ = ' + str(np.around(corr_vel_k_p, decimals=3)) +
                      '\np-value = ' + str(format(p_vel_k_p, ".3E")),
-                    prop=dict(size=16),
+                    prop=dict(size=18),
                     frameon=True, loc=1,
                     bbox_transform=ax3.transAxes)
 test1.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
@@ -189,16 +228,16 @@ ax3.add_artist(test1)
 ax3.get_legend().remove()
 
 handles, labels = ax0.get_legend_handles_labels()
-fig1.legend(handles, labels, loc='center', ncol=3, fontsize=18,
+fig1.legend(handles, labels, loc='center', ncol=3, fontsize=20,
             bbox_to_anchor= (0.5, 0.99),
             fancybox=False, framealpha=1, shadow=True, borderpad=1)
 
 plt.tight_layout()
 #plt.show()
-#plt.savefig(os.path.join(plot_path, 'correlation_plot.jpg'),
-#             bbox_inches='tight')
-plt.savefig(os.path.join(plot_path, 'correlation_plot_nolabel.pdf'),
+plt.savefig(os.path.join(plot_path, 'correlation_plot_exp_fit.pdf'),
              bbox_inches='tight')
+# plt.savefig(os.path.join(plot_path, 'correlation_plot.pdf'),
+#               bbox_inches='tight')
 
 # # Plot Fig 1
 # fig2 = plt.figure(figsize=(14, 12), constrained_layout=True)

@@ -23,30 +23,32 @@ sns.set_context('poster')
 
 plot_path = os.path.join(MAIN_PATH, 'plots/')
 
-farinotti_path = os.path.join(MAIN_PATH, 'input_data/rgi62_era5_itmix_df.csv')
+farinotti_path = os.path.join(MAIN_PATH, 'input_data/rgi62_era5_itmix_df_backup.csv')
 
 # Reading results with calving main volumes
 output_dir_path = os.path.join(MAIN_PATH, 'output_data/9_summary_output/')
-df_both = pd.read_csv(os.path.join(output_dir_path,
-                                'glacier_stats_both_methods.csv'))
+
+df_vel = pd.read_csv(os.path.join(output_dir_path,
+                                    'glacier_stats_vel_method.csv'))
+
+
+df_racmo = pd.read_csv(os.path.join(output_dir_path,
+                                      'glacier_stats_racmo_method.csv'))
+
+df_racmo = df_racmo.loc[df_racmo.calving_flux_y !=0]
 
 # Reading results without calving
 prepo_dir_path = os.path.join(MAIN_PATH, 'output_data/1_Greenland_prepo/')
 df_prepro = pd.read_csv(os.path.join(prepo_dir_path,
                 'glacier_statistics_greenland_no_calving_with_sliding_.csv'))
 df_prepro = df_prepro[['rgi_id', 'inv_volume_km3']]
+df_prepro.rename(columns={'inv_volume_km3': 'inv_volume_km3_no_calving'},
+                 inplace=True)
 
-out_vbsl_path = os.path.join(MAIN_PATH, 'output_data/12_volume_vsl/config/')
-config_one_path = os.path.join(out_vbsl_path,
-                               'config_01_onlyMT/volume_below_sea_level.csv')
-
-config_two_path = os.path.join(out_vbsl_path,
-                               'config_02_onlyMT/volume_below_sea_level.csv')
 
 # Reading farinotti
 fari = pd.read_csv(farinotti_path)
 fari.rename(columns={'RGIId': 'rgi_id'}, inplace=True)
-
 fari_crop = fari[['rgi_id', 'vol_itmix_m3', 'vol_bsl_itmix_m3']]
 
 vol_km3 = fari_crop.loc[:,'vol_itmix_m3']*1e-9
@@ -54,6 +56,16 @@ vol_bsl_km3 = fari_crop.loc[:,'vol_bsl_itmix_m3']*1e-9
 
 fari_crop.loc[:, 'vol_itmix_km3'] = vol_km3
 fari_crop.loc[:, 'vol_bsl_itmix_km3'] = vol_bsl_km3
+
+# Reading configurations for volume below sea level
+# Reading volume below sea level
+out_vbsl_path = os.path.join(MAIN_PATH, 'output_data/12_volume_vsl/config/')
+
+config_one_path = os.path.join(out_vbsl_path,
+                               'config_01_onlyMT/volume_below_sea_level.csv')
+
+config_two_path = os.path.join(out_vbsl_path,
+                               'config_02_onlyMT/volume_below_sea_level.csv')
 
 config_one = pd.read_csv(config_one_path)
 config_two = pd.read_csv(config_two_path)
@@ -68,136 +80,179 @@ config_two.rename(columns={'volume bsl': 'vol_bsl_MR'}, inplace=True)
 config_two.rename(columns={'volume bsl with calving': 'vol_bsl_wc_MR'},
                   inplace=True)
 
-# Merge to main results
-df_common = pd.merge(left=config_one,
-                    right=config_two,
-                    how='inner',
-                    left_on = 'rgi_id',
-                    right_on='rgi_id')
+### Merging calibration data frames with their respective volume without
+# calving
 
-
-#getting the common glaciers and making all a single data frame
-df_both_plus_prepro = pd.merge(left=df_both,
+df_racmo_with_no_fa = pd.merge(left=df_racmo,
                     right=df_prepro,
                     how='left',
                     left_on = 'rgi_id',
                     right_on='rgi_id')
 
-df_all = pd.merge(left=df_both_plus_prepro,
-                  right=df_common,
-                  how='left',
-                  left_on='rgi_id',
-                  right_on='rgi_id')
+df_vel_with_no_fa = pd.merge(left=df_vel,
+                    right=df_prepro,
+                    how='left',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-df_all_plus_fari = pd.merge(left=df_all,
-                  right=fari_crop,
-                  how='inner',
-                  left_on='rgi_id',
-                  right_on='rgi_id')
+# Merge to main results
+df_racmo_vbsl = pd.merge(left=df_racmo_with_no_fa,
+                    right=config_two,
+                    how='left',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-no_calving_volume = df_all['inv_volume_km3'].sum()
-no_calving_vol_bsl = df_all['vol_bsl_MV'].sum()
+df_vel_vbsl = pd.merge(left=df_vel_with_no_fa,
+                    right=config_one,
+                    how='left',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-vel_volume_c = df_all['inv_volume_km3_MV'].sum()
-vel_volume_bsl_c = df_all['vol_bsl_wc_MV'].sum()
+## Merge the volume without calving per calibration method
+df_racmo_with_fari = pd.merge(left=df_racmo_vbsl,
+                    right=fari_crop,
+                    how='left',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-racmo_volume_c = df_all['inv_volume_km3_MR'].sum()
-racmo_volume_bsl_c = df_all['vol_bsl_wc_MR'].sum()
+df_racmo_with_fari.to_csv(os.path.join(plot_path, 'racmo_fari_bkup.csv'))
 
-fari_volume = df_all_plus_fari['vol_itmix_km3'].sum()
-fari_volume_bsl = df_all_plus_fari['vol_bsl_itmix_km3'].sum()
+df_vel_with_fari = pd.merge(left=df_vel_vbsl,
+                    right=fari_crop,
+                    how='left',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-print(df_all_plus_fari.rgi_id)
 
-exp_name = ['Farinotti et al. (2019)',
-            'Without calving',
-            '$q_{calving}$ with velocities',
-            '$q_{calving}$ with RACMO']
-exp_number = [1, 2, 3, 4]
 
-vol_exp = np.array([fari_volume,
-                    no_calving_volume,
-                    vel_volume_c,
-                    racmo_volume_c])
+# Merged glaciers
+df_merged_with_fari = pd.merge(left=df_racmo_with_fari,
+                    right=df_vel_with_fari,
+                    how='inner',
+                    left_on = 'rgi_id',
+                    right_on='rgi_id')
 
-vol_bsl_exp = np.array([fari_volume_bsl,
-                        no_calving_vol_bsl,
-                        vel_volume_bsl_c,
-                        racmo_volume_bsl_c])
+#print(df_merged_with_fari.columns.values)
 
-vol_exp_sle = np.array([utils_vel.calculate_sea_level_equivalent(fari_volume),
-                utils_vel.calculate_sea_level_equivalent(no_calving_volume),
-                utils_vel.calculate_sea_level_equivalent(vel_volume_c),
-                utils_vel.calculate_sea_level_equivalent(racmo_volume_c)])
+#print(df_racmo_with_fari.columns)
+Num_glacier = np.array([len(df_vel_with_fari.rgi_id),
+                      len(df_vel_with_fari.rgi_id),
+                      len(df_vel_with_fari.rgi_id),
+                      len(df_racmo_with_fari.rgi_id),
+                      len(df_racmo_with_fari.rgi_id),
+                      len(df_racmo_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id),
+                      len(df_merged_with_fari.rgi_id)])
+print(Num_glacier)
 
-vol_bsl_exp_sle = np.array([utils_vel.calculate_sea_level_equivalent(fari_volume_bsl),
-                  utils_vel.calculate_sea_level_equivalent(no_calving_vol_bsl),
-                  utils_vel.calculate_sea_level_equivalent(vel_volume_bsl_c),
-                  utils_vel.calculate_sea_level_equivalent(racmo_volume_bsl_c)])
+vol_exp = np.array([df_vel_with_fari['vol_itmix_km3'].sum(),
+                    df_vel_with_fari['inv_volume_km3_no_calving'].sum(),
+                    df_vel_with_fari['inv_volume_km3'].sum(),
+                    df_racmo_with_fari['vol_itmix_km3'].sum(),
+                    df_racmo_with_fari['inv_volume_km3_no_calving'].sum(),
+                    df_racmo_with_fari['inv_volume_km3'].sum(),
+                    df_merged_with_fari['vol_itmix_km3_x'].sum(),
+                    df_merged_with_fari['inv_volume_km3_no_calving_x'].sum(),
+                    df_merged_with_fari['inv_volume_km3_y'].sum(),
+                    df_merged_with_fari['inv_volume_km3_x'].sum()])
 
-percentage = np.absolute(np.array([utils_vel.calculate_volume_percentage(vel_volume_c,
-                                                                         racmo_volume_c),
-    utils_vel.calculate_volume_percentage(vel_volume_c,
-                                          no_calving_volume),
-     utils_vel.calculate_volume_percentage(racmo_volume_c,
-                                           no_calving_volume),
-     utils_vel.calculate_volume_percentage(vel_volume_c,
-                                           fari_volume),
-    utils_vel.calculate_volume_percentage(racmo_volume_c,
-                                          fari_volume)]))
 
-percentage_diff = percentage
+vol_bsl_exp = np.array([df_vel_with_fari['vol_bsl_itmix_km3'].sum(),
+                        df_vel_with_fari['vol_bsl_MV'].sum(),
+                        df_vel_with_fari['vol_bsl_wc_MV'].sum(),
+                        df_racmo_with_fari['vol_bsl_itmix_km3'].sum(),
+                        df_racmo_with_fari['vol_bsl_MR'].sum(),
+                        df_racmo_with_fari['vol_bsl_wc_MR'].sum(),
+                       df_merged_with_fari['vol_bsl_itmix_km3_x'].sum(),
+                       df_merged_with_fari['vol_bsl_MR'].sum(),
+                       df_merged_with_fari['vol_bsl_wc_MV'].sum(),
+                       df_merged_with_fari['vol_bsl_wc_MR'].sum()])
 
-# Make a dataframe with each configuration output
-d = {'Experiment No': exp_number,
-     'Experiment Name': exp_name,
-     'Volume in s.l.e': vol_exp_sle,
-     'Volume bsl in s.l.e': vol_bsl_exp_sle,
-     'Volume in km3': vol_exp,
-     'Volume bsl in km3': vol_bsl_exp}
-ds = pd.DataFrame(data=d)
+vol_exp_sle = []
+for vol in vol_exp:
+    sle = utils_vel.calculate_sea_level_equivalent(vol)
+    vol_exp_sle = np.append(vol_exp_sle, sle)
 
-print('FOR THE PAPER')
-print('----------------')
-print(exp_name)
+vol_bsl_exp_sle = []
+for vol_bsl in vol_bsl_exp:
+    sle = utils_vel.calculate_sea_level_equivalent(vol_bsl)
+    vol_bsl_exp_sle = np.append(vol_bsl_exp_sle, sle)
+
 print(vol_exp)
-print(vol_bsl_exp)
-print('Difference', np.diff(vol_exp))
-print('Percentage', percentage)
+## TODO: CALCULATE ALL DIFF BETWEEN VOLUMES!!!
+percentage_of_diff = [utils_vel.calculate_volume_percentage(vol_exp[1], vol_exp[2]),
+                     utils_vel.calculate_volume_percentage(vol_exp[4], vol_exp[5]),
+                     utils_vel.calculate_volume_percentage(vol_exp[9], vol_exp[8])]
+                     # utils_vel.calculate_volume_percentage(vol_exp[4],  vol_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_exp[5], vol_exp[2])]
+print(percentage_of_diff)
 
-print(ds)
+percentage_of_diff_vbsl = [utils_vel.calculate_volume_percentage(vol_bsl_exp[1], vol_bsl_exp[2]),
+                     utils_vel.calculate_volume_percentage(vol_bsl_exp[4], vol_bsl_exp[5]),
+                     utils_vel.calculate_volume_percentage(vol_bsl_exp[9], vol_bsl_exp[8])]
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[4],  vol_bsl_exp[5]),
+                     # utils_vel.calculate_volume_percentage(vol_bsl_exp[5], vol_bsl_exp[2])]
+print(percentage_of_diff_vbsl)
+
+
+print('For the paper check if the volume below sea level is bigger than diff among config.')
+print('Differences in volume below sea level ')
+print(abs(vol_bsl_exp_sle[9]-vol_bsl_exp_sle[8]))
+print(abs(vol_bsl_exp_sle[7]-vol_bsl_exp_sle[8]))
+print(abs(vol_bsl_exp_sle[7]-vol_bsl_exp_sle[9]))
+
+print('Differences in volume')
+print(abs(vol_exp_sle[9]-vol_exp_sle[8]))
+print(abs(vol_exp_sle[7]-vol_exp_sle[8]))
+print(abs(vol_exp_sle[7]-vol_exp_sle[9]))
+
+print(str(vol_exp_sle[7]) + 'increase to ' + str(vol_exp_sle[8])+ ' when using vel method')
+print(str(vol_exp_sle[7]) + 'increase to ' + str(vol_exp_sle[9])+ ' when using RACMO method')
+print('farinotti '+str(vol_exp_sle[6]))
+
+print(str(vol_bsl_exp_sle[7]) + 'increase to ' + str(vol_bsl_exp_sle[8])+ ' when using vel method')
+print(str(vol_bsl_exp_sle[7]) + 'increase to ' + str(vol_bsl_exp_sle[9])+ ' when using RACMO method')
+print('farinotti '+str(vol_bsl_exp_sle[6]))
+
+print('Percentage farinotti compared to RACMO and Vel')
+print('to vel method '+ str(utils_vel.calculate_volume_percentage(vol_exp[6],
+                                                                  vol_exp[8])))
+print('to RACMO method '+ str(utils_vel.calculate_volume_percentage(vol_exp[6],
+                                                                  vol_exp[9])))
 
 
 fig = plt.figure(figsize=(12, 8))
 sns.set(style="white", context="talk")
 
-N = len(vol_exp)
-ind = np.arange(N)    # the x locations for the groups
-labelsxticks = exp_name
-
 ax1=fig.add_subplot(111)
 color_palette = sns.color_palette("deep")
 
 color_array = [color_palette[3], color_palette[2],
+               color_palette[0], color_palette[3],
+               color_palette[2], color_palette[1],
+               color_palette[3], color_palette[2],
                color_palette[0], color_palette[1]]
 
-ax2= ax1.twiny()
+
 
 # Example data
-y_pos = np.arange(len(exp_name))
+y_pos = np.arange(len(vol_exp))
+y_pos = [0,0.5,1,2,2.5,3,4,4.5,5,5.5]
 
-ax1.barh(y_pos, vol_bsl_exp*-1, align='center', color=sns.xkcd_rgb["grey"],
+
+p1 = ax1.barh(y_pos, vol_bsl_exp*-1, align='center', color=sns.xkcd_rgb["grey"],
             height=0.5, edgecolor="white")
 
-ax1.barh(y_pos, vol_exp, align='center', color=color_array, height=0.5)
-
+p2 = ax1.barh(y_pos, vol_exp, align='center', color=color_array, height=0.5)
 
 ax1.set_yticks(y_pos)
-ax1.set_yticklabels(labelsxticks)
+ax1.set_yticklabels([])
 # labels read top-to-bottom
 ax1.invert_yaxis()
 ax1.set_xlabel('Volume [km³]',fontsize=18)
 
+ax2= ax1.twiny()
 ax2.set_xlim(ax1.get_xlim())
 ax2.set_xticks(ax1.get_xticks())
 array = ax1.get_xticks()
@@ -210,9 +265,17 @@ for value in array:
 ax2.set_xticklabels(sle, fontsize=20)
 ax2.set_xlabel('Volume [mm SLE]', fontsize=18)
 
+plt.legend((p2[0], p2[1], p2[2], p2[5]),
+           ('Farinotti et al. (2019)',
+            'Without $q_{calving}$',
+            'With $q_{calving}$ - velocity',
+            'With $q_{calving}$ - RACMO'),
+            frameon=True, bbox_to_anchor=(0.8, -0.2), ncol=2)
+            #bbox_to_anchor=(1.1, -0.15), ncol=5, fontsize=15)
 
 plt.margins(0.05)
 
 plt.tight_layout()
-plt.savefig(os.path.join(plot_path, 'volume_greenland.pdf'),
-            bbox_inches='tight')
+plt.show()
+# plt.savefig(os.path.join(plot_path, 'volume_greenland_trial.pdf'),
+#              bbox_inches='tight')

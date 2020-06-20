@@ -50,6 +50,9 @@ coast_line = salem.read_shapefile(filename_coastline)
 
 #RGI v6
 df = gpd.read_file(RGI_FILE)
+
+rgi_area_total = df['Area'].sum()
+
 df.set_index('RGIId')
 index = df.index.values
 
@@ -91,7 +94,7 @@ full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration', '7_calving_vel_calibrated',
            '8_calving_racmo_calibrated',
-           '11_climate_stats', '12_volume_vsl', '13_non_calving'}
+           '11_climate_stats', '12_volume_vsl', '13_non_calving', '14_ice_cap_prepo'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -143,11 +146,14 @@ dk = pd.DataFrame(data=k)
 
 print(dk)
 
+print(study_area)
+print(rgi_area_total)
+
 ##############################################################################
 
 import matplotlib.gridspec as gridspec
 
-fig = plt.figure(figsize=(12, 7), constrained_layout=False)
+fig = plt.figure(figsize=(14, 8), constrained_layout=False)
 spec = gridspec.GridSpec(1, 3, width_ratios=[2.5, 1.5, 1.5])
 
 ax0 = plt.subplot(spec[0])
@@ -165,13 +171,14 @@ smap.set_shapefile(sub_lan, facecolor=sns.xkcd_rgb["grey"],
 # Marine-terminating
 # #   i: Not Connected
 smap.set_shapefile(sub_no_conect, facecolor=sns.xkcd_rgb["medium blue"],
-                   label='Tidewater weakly connected',
-                   edgecolor=None)
+                   label='Tidewater weakly connected', linewidth=3.0,
+                   edgecolor=sns.xkcd_rgb["medium blue"])
 #
 # #   ii: Connected
 smap.set_shapefile(sub_conect, facecolor=sns.xkcd_rgb["navy blue"],
-                   label='Tidewater strongly connected',
-                   edgecolor=None)
+                   label='Tidewater strongly connected', linewidth=3.0,
+                   edgecolor=sns.xkcd_rgb["navy blue"])
+
 smap.set_scale_bar(location=(0.78, 0.04))
 smap.visualize(ax=ax0)
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
@@ -196,11 +203,11 @@ bars = np.add(Land_area, Tidewater_connected).tolist()
 
 p1 = ax1.bar(ind, Land_area, width, color=sns.xkcd_rgb["grey"], label='Land-terminating')
 p2 = ax1.bar(ind, Tidewater_connected, width, bottom=Land_area,
-             color=sns.xkcd_rgb["navy blue"], label='Tidewater strongly connected')
+             color=sns.xkcd_rgb["navy blue"], label='Tidewater connectivity level 2')
 p3 = ax1.bar(ind, Tidewater_no_connected, width, bottom=bars,
-             color=sns.xkcd_rgb["medium blue"], label='Tidewater weakly connected (study area)')
+             color=sns.xkcd_rgb["medium blue"], label='Tidewater connectivity level 0,1 (study area)')
 
-ax1.set_ylabel('Area (% of Greenland)')
+ax1.set_ylabel('Area (% of Greenland PGs)')
 #ax1.set_ylim(0, 100)
 ax1.set_xticks(ind, ('1'))
 ax1.set_xticks(ind)
@@ -208,14 +215,16 @@ ax1.set_xticklabels(['1'])
 
 ax1.legend((p1[0], p2[0], p3[0]),
            ('Land-terminating',
-            'Tidewater strongly connected',
-            'Tidewater weakly connected (study area)'))
+            'Tidewater connectivity level 2',
+            'Tidewater connectivity level 0,1 (study area)'))
 
 ax1.get_legend().remove()
 
 handles, labels = ax1.get_legend_handles_labels()
-fig.legend(handles, labels, loc='upper center',
-            ncol=3, fontsize=11)
+
+fig.legend(handles, labels, bbox_to_anchor= (0.55, 1.05), loc='upper center',
+             ncol=3, fontsize=18)
+
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 ax1.add_artist(at)
 
@@ -238,41 +247,48 @@ bars1 = np.add(run_area, no_sol_area).tolist()
 bars2 = np.add(bars1, prepro_area).tolist()
 bars3 = np.add(bars2, no_vel_area).tolist()
 
-p5 = ax2.bar(ind, run_area, width, color=palette[0],
-             label='Glaciers process in this study')
+p5 = ax2.bar(ind, run_area, width, color=palette[0])
 
-p1 = ax2.bar(ind, no_sol_area, width, bottom=run_area, color=palette[1],
-             label='Glaciers with no calving solution')
+p1 = ax2.bar(ind, no_sol_area, width, bottom=run_area, color=palette[1])
 
-p2 = ax2.bar(ind, prepro_area, width, bottom=bars1, color=palette[2],
-             label='OGGM preprocessing errors')
+p2 = ax2.bar(ind, prepro_area, width, bottom=bars1, color=palette[2])
 
-p3 = ax2.bar(ind, no_vel_area, width, bottom=bars2, color=palette[3],
-             label='Glaciers with no velocity data')
+p3 = ax2.bar(ind, no_vel_area, width, bottom=bars2, color=palette[3])
 
-p4 = ax2.bar(ind, no_racmo_area, width, bottom=bars3, color=palette[4],
-             label='Glaciers with no RACMO data')
+p4 = ax2.bar(ind, no_racmo_area, width, bottom=bars3, color=palette[4])
 
 
 
 ax2.set_ylabel('Area (% of study area)')
+
 #ax2.set_yticks(ax1.get_yticks())
 #ax2.set_ylim(0, 100)
 
 ax2.set_xticks(ind)
 ax2.set_xticklabels(['2'])
 
-ax2.legend((p5[0], p1[0], p2[0], p3[0], p4[0]),
+lgd = ax2.legend((p5[0], p1[0], p2[0], p3[0], p4[0]),
            ('Processed',
             'Without $q_{calving}$ solution',
             'OGGM errors',
             'Without velocity data',
-            'Without RACMO data'), loc='lower right', frameon=True,
-           facecolor='white', fancybox=False, fontsize=9.5)
+            'Without RACMO data'),#, frameon=True,
+            loc='lower right', bbox_to_anchor=(2.6, 0.0), fontsize=18)
+
+#ax2.get_legend().remove()
+
+# handles_2, labels_2 = ax2.get_legend_handles_labels()
+# fig.legend(handles_2, labels_2, frameon=True,
+#            bbox_to_anchor= (5, 0.0), loc='lower right',
+#            fontsize=18)
+          # facecolor='white', fancybox=False, fontsize=18)
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
 ax2.add_artist(at)
+ax2.add_artist(lgd)
 
 plt.tight_layout()
-plt.savefig(os.path.join(plot_path, 'rgi_overview.pdf'),
-            bbox_inches='tight') 
+#plt.show()
+plt.savefig(os.path.join(plot_path, 'rgi_overview_test.pdf'),
+            bbox_inches='tight', pad_inches=0.25)
 
+#bbox_extra_artists=(lgd,),

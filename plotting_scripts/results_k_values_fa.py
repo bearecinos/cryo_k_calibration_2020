@@ -51,7 +51,7 @@ df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
 
 df_both  = df_both.loc[df_both.diff_k != 0]
 
-df_both = df_both.loc[df_both.k_value_MR !=0]
+#df_both = df_both.loc[df_both.k_value_MR !=0]
 
 # print(df_both.rgi_area_km2.sum() / 28515.391 * 100)
 # exit()
@@ -98,14 +98,14 @@ if p_pearson_q > 0.05:
 else:
     print('q - values are correlated (reject H0) p=%.3f' % p_pearson_q)
     print(p_pearson_k)
-
+exit()
 #Now plotting
 import matplotlib.gridspec as gridspec
 
 color_palette = sns.color_palette("muted")
 
 # Plot Fig 1
-fig1 = plt.figure(figsize=(14, 16), constrained_layout=True)
+fig1 = plt.figure(figsize=(14, 16), constrained_layout=False)
 
 widths = [2, 2]
 heights = [2, 4]
@@ -117,8 +117,11 @@ spec = gridspec.GridSpec(2, 2, wspace=0.5, hspace=0.3, width_ratios=widths,
 ax0 = plt.subplot(spec[0])
 sns.scatterplot(x='k_value_MR', y='k_value_MV', data=df_both, ax=ax0,
                 color=color_palette[0])
-ax0.set_xlabel('$k$ - RACMO \n [yr$^{-1}$]')
-ax0.set_ylabel('$k$ - velocities \n [yr$^{-1}$]')
+
+ax0.plot([0, 2.5], [0, 2.5], c='grey', alpha=0.7)
+
+ax0.set_xlabel('$k_{RACMO}$ \n [yr$^{-1}$]')
+ax0.set_ylabel('$k_{velo}$ \n [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
 test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_k,
                     ".2f")) + '\np-value = ' + str(format(p_pearson_k,
@@ -130,8 +133,9 @@ ax0.add_artist(test)
 ax1 = plt.subplot(spec[1])
 sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', data=df_both, ax=ax1,
                 color=color_palette[1])
-ax1.set_xlabel('$q_{calving}$ - Racmo \n [$km^3$yr$^{-1}$]')
-ax1.set_ylabel('$q_{calving}$ - velocities \n [$km^3$yr$^{-1}$]')
+ax1.plot([0, 0.3], [0, 0.3], c='grey', alpha=0.7)
+ax1.set_xlabel('$q_{calving-RACMO}$ \n [$km^3$yr$^{-1}$]')
+ax1.set_ylabel('$q_{calving-velo}$ \n [$km^3$yr$^{-1}$]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
 test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_q,
                     ".2f")) + '\np-value = ' + str(format(p_pearson_q,
@@ -185,5 +189,7 @@ ax3.add_artist(at)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
-             bbox_inches='tight')
+# plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
+#              bbox_inches='tight')
+plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+              bbox_inches='tight')

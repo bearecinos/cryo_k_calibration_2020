@@ -16,9 +16,9 @@ from collections import OrderedDict
 
 from oggm import workflow, cfg, utils
 
-# rcParams['axes.labelsize'] = 20
-# rcParams['xtick.labelsize'] = 20
-# rcParams['ytick.labelsize'] = 20
+rcParams['axes.labelsize'] = 18
+rcParams['xtick.labelsize'] = 18
+rcParams['ytick.labelsize'] = 18
 
 
 #Paths to data
@@ -126,9 +126,9 @@ sub_mar = shape_cap.loc[shape_cap['TermType']=='1']
 import matplotlib.gridspec as gridspec
 
 # Plotting
-fig2 = plt.figure(figsize=(14, 12), constrained_layout=False)
+fig2 = plt.figure(figsize=(18, 6), constrained_layout=False)
 
-spec = gridspec.GridSpec(1, 3, wspace=0.3)
+spec = gridspec.GridSpec(1, 3, wspace=0.5)
 
 ax0 = plt.subplot(spec[0])
 sm = ds_geo_sel.salem.get_map(countries=False);
@@ -137,8 +137,8 @@ sm.set_shapefile(gdir.read_shapefile('outlines'), color='black')
 sm.set_data(ds_geo_sel.Topography)
 sm.set_cmap('topo')
 sm.set_scale_bar()
-sm.set_lonlat_contours(interval=1.5)
-sm.visualize(ax=ax0, cbar_title='m. above s.l.');
+sm.set_lonlat_contours(interval=3)
+sm.visualize(ax=ax0, cbar_title='m. above s.l.', );
 at = AnchoredText('a', prop=dict(size=16), frameon=True, loc=1)
 ax0.add_artist(at)
 
@@ -149,7 +149,7 @@ sm.set_shapefile(shape_cap, color='black')
 sm.set_data(ds_geo_sel.Topography)
 sm.set_cmap('topo')
 sm.set_scale_bar()
-sm.set_lonlat_contours(interval=1.5)
+sm.set_lonlat_contours(interval=3)
 sm.visualize(ax=ax1, cbar_title='m. above s.l.')
 at = AnchoredText('b', prop=dict(size=16), frameon=True, loc=2)
 ax1.add_artist(at)
@@ -162,7 +162,7 @@ sm.set_shapefile(sub_mar, color='r')
 sm.set_data(dve_sel.data)
 sm.set_cmap(cmap)
 sm.set_scale_bar()
-sm.set_lonlat_contours(interval=1.5)
+sm.set_lonlat_contours(interval=3)
 sm.visualize(ax=ax2, cbar_title='m $yr^{-1}$')
 at = AnchoredText('c', prop=dict(size=16), frameon=True, loc=2)
 ax2.add_artist(at)
@@ -171,4 +171,4 @@ plt.tight_layout()
 #plt.show()
 
 plt.savefig(os.path.join(plot_path, 'ice_cap.pdf'),
-            bbox_inches='tight')
+             bbox_inches='tight')
