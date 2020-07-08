@@ -321,6 +321,6 @@ ax2.add_artist(test_racmo_obs)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig(os.path.join(plot_path, 'k_values_result_stats_new.pdf'),
+plt.savefig(os.path.join(plot_path, 'k_values_result_stats_new.png'),
                 bbox_inches='tight')
 

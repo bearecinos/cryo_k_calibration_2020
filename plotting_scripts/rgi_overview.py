@@ -40,6 +40,8 @@ mask_file = os.path.join(MAIN_PATH,
 filename_coastline = os.path.join(MAIN_PATH,
                         'input_data/ne_10m_coastline/ne_10m_coastline.shp')
 
+rgi_original_path = '/home/bea/Documents/global_data_base/05_rgi61_GreenlandPeriphery/05_rgi61_GreenlandPeriphery.shp'
+
 #Reading RACMO mask
 # The mask and geo reference data
 ds_geo = xr.open_dataset(mask_file, decode_times=False)
@@ -149,6 +151,18 @@ print(dk)
 print(study_area)
 print(rgi_area_total)
 
+world_area = 705738.793
+study_area_percentage = study_area / world_area * 100
+print(study_area_percentage)
+print(study_area)
+
+rgi_area_from_glims = 89717.066
+print(rgi_area_from_glims-rgi_area_total)
+
+drgi = gpd.read_file(rgi_original_path)
+drgi_original_area = drgi['Area'].sum()
+print(drgi_original_area/world_area*100)
+#exit()
 ##############################################################################
 
 import matplotlib.gridspec as gridspec
@@ -288,7 +302,7 @@ ax2.add_artist(lgd)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig(os.path.join(plot_path, 'rgi_overview_test.pdf'),
+plt.savefig(os.path.join(plot_path, 'rgi_overview_test.png'),
             bbox_inches='tight', pad_inches=0.25)
 
 #bbox_extra_artists=(lgd,),

@@ -98,7 +98,7 @@ if p_pearson_q > 0.05:
 else:
     print('q - values are correlated (reject H0) p=%.3f' % p_pearson_q)
     print(p_pearson_k)
-exit()
+
 #Now plotting
 import matplotlib.gridspec as gridspec
 
@@ -191,5 +191,5 @@ plt.tight_layout()
 #plt.show()
 # plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
 #              bbox_inches='tight')
-plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+plt.savefig(os.path.join(plot_path, 'k_values_fa_result.png'),
               bbox_inches='tight')

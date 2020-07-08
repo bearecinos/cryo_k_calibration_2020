@@ -163,5 +163,5 @@ ax1.add_artist(at)
 
 plt.tight_layout()
 #plt.show()
-plt.savefig(os.path.join(plot_path, 'correlation_plot_mustar.pdf'),
+plt.savefig(os.path.join(plot_path, 'correlation_plot_mustar.png'),
               bbox_inches='tight')
