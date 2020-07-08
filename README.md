@@ -18,7 +18,7 @@ The content of the repository is the following:
 **III. velocity_tools** (calibration toolbox)
 The velocity_tools is a collection of scripts to read in velocity observations and RACMO data. utils_velocity.py contains a collection of functions used to re-project these observations to the OGGM glacier grid and calibrate the *k* parameter in OGGM calving law.
 
-ADD LICENSE AND CITATION LATER
+[![DOI](https://zenodo.org/badge/249556625.svg)](https://zenodo.org/badge/latestdoi/249556625)
 
 
 
