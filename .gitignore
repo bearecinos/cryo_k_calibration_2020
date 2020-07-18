@@ -3,4 +3,6 @@
 /plots
 /.idea
 __pycache__/
-*.py[cod]
+*.pyd
+*.pyc
+*.pyo
