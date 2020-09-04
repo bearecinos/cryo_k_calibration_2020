@@ -77,11 +77,16 @@ eq_v = '\ny = ' + str(np.around(a_v, decimals=2))+'x^2 '+ str(np.around(b_v,
 
 ## exponential fit for slope
 initial_guess = [0.1, 1]
-popt_v, pcov_v = optimize.curve_fit(func, df_vel.calving_slope, df_vel.k_value_MV, initial_guess)
+popt_v, pcov_v = optimize.curve_fit(func,
+                                    df_vel.calving_slope,
+                                    df_vel.k_value_MV,
+                                    initial_guess)
+
 x_fit_v = np.linspace(0, max(df_vel.calving_slope), 100)
 
-eq_exp_v = '\ny = ' + str(np.around(popt_v[0], decimals=2))+'e$^{'+ str(np.around(popt_v[1],
-                            decimals=2))+'x}$'
+eq_exp_v = '\ny = ' + str(np.around(popt_v[0],
+                        decimals=2))+'e$^{'+ str(np.around(popt_v[1],
+                        decimals=2))+'x}$'
 
 df_vel.rename(columns={'k_value_MV': 'k_value'}, inplace=True)
 df_vel.rename(columns={'calving_mu_star_MV': 'calving_mu_star'}, inplace=True)
@@ -114,11 +119,16 @@ eq_r = 'y = ' + str(np.around(a_r, decimals=2))+'x^2 '+ str(np.around(b_r,
                             decimals=2))+'x +'+ str(np.around(c_r, decimals=2))
 
 ## exponential fit for slope
-popt_r, pcov_r = optimize.curve_fit(func, df_racmo.calving_slope, df_racmo.k_value_MR, initial_guess)
+popt_r, pcov_r = optimize.curve_fit(func,
+                                    df_racmo.calving_slope,
+                                    df_racmo.k_value_MR,
+                                    initial_guess)
+
 x_fit_r = np.linspace(0, max(df_racmo.calving_slope), 100)
 
-eq_exp_r = 'y = ' + str(np.around(popt_r[0], decimals=2))+'e$^{'+ str(np.around(popt_r[1],
-                            decimals=2))+'x}$'
+eq_exp_r = 'y = ' + str(np.around(popt_r[0],
+                        decimals=2))+'e$^{'+ str(np.around(popt_r[1],
+                        decimals=2))+'x}$'
 
 df_racmo.rename(columns={'k_value_MR': 'k_value'}, inplace=True)
 df_racmo.rename(columns={'calving_mu_star_MR': 'calving_mu_star'}, inplace=True)
@@ -129,20 +139,7 @@ df_vel['k_diff'] = (df_vel.k_value - df_racmo.k_value).abs()
 
 data_all = pd.concat([df_vel, df_racmo], sort=False)
 
-#print(data_all)
-
-
 data_all['calving_front_width'] = data_all.loc[:,'calving_front_width']*1e-3
-
-
-
-# data_all.rename(columns={'k_value': '$k$ \n [$yr^{-1}$]',
-#                         'calving_mu_star': '$\mu^{*}$ \n [mm $yr^{-1}K^{-1}$]',
-#                          'total_prcp_top': 'precipitation \n [mm $yr^{-1}$]',
-#                          'calving_slope': 'slope angle \n [$^\circ$]',
-#                          'calving_free_board': 'free board \n [m a.s.l]',
-#                          'calving_front_width': 'calving front width \n [m]'},
-#                 inplace=True)
 
 #Now plotting
 import matplotlib.gridspec as gridspec
@@ -244,71 +241,3 @@ plt.tight_layout()
 # plt.show()
 plt.savefig(os.path.join(plot_path, 'correlation_plot_exp_fit.pdf'),
              bbox_inches='tight')
-# plt.savefig(os.path.join(plot_path, 'correlation_plot.pdf'),
-#               bbox_inches='tight')
-
-# # Plot Fig 1
-# fig2 = plt.figure(figsize=(14, 12), constrained_layout=True)
-#
-# spec = gridspec.GridSpec(2, 2)
-#
-# ax0_0 = plt.subplot(spec[0])
-# corr, p = stats.pearsonr(data_all.calving_slope, data_all.k_diff)
-# sns.scatterplot(x='calving_slope', y='k_diff', data=data_all,
-#                 ax=ax0_0)
-# ax0_0.set_xlabel('calving front slope angle \n [$^{o}$]')
-# ax0_0.set_ylabel('$k$ differences \n [yr$^{-1}$]')
-# at = AnchoredText('a', prop=dict(size=20), frameon=True, loc=2)
-# test = AnchoredText('$r_{s}$ = '+ str(np.around(corr,
-#                     decimals=3)) + '\np-value = ' + str(format(p, ".3E")),
-#                     prop=dict(size=16), frameon=False, loc=6)
-# ax0_0.add_artist(at)
-# ax0_0.add_artist(test)
-#
-#
-# ax0_1 = plt.subplot(spec[1])
-# corr, p = stats.pearsonr(data_all.calving_free_board, data_all.k_diff)
-# sns.scatterplot(x='calving_free_board', y='k_diff', data=data_all,
-#                 ax=ax0_1)
-# ax0_1.set_xlabel('freeboard \n [m]')
-# ax0_1.set_ylabel('$k$ differences \n [yr$^{-1}$]')
-# at = AnchoredText('b', prop=dict(size=20), frameon=True, loc=2)
-# test = AnchoredText('$r_{s}$ = '+ str(np.around(corr,
-#                     decimals=3)) + '\np-value = ' + str(format(p, ".3E")),
-#                     prop=dict(size=16), frameon=False, loc=1)
-# ax0_1.add_artist(at)
-# ax0_1.add_artist(test)
-#
-#
-#
-# ax1_0 = plt.subplot(spec[2])
-# corr, p = stats.pearsonr(data_all.calving_front_width, data_all.k_diff)
-# sns.scatterplot(x='calving_front_width', y='k_diff', data=data_all,
-#                 ax=ax1_0)
-# ax1_0.set_xlabel('calving front width \n [km]')
-# ax1_0.set_ylabel('$k$ differences \n [yr$^{-1}$]')
-# at = AnchoredText('c', prop=dict(size=20), frameon=True, loc=2)
-# test = AnchoredText('$r_{s}$ = '+ str(np.around(corr,
-#                     decimals=3)) + '\np-value = ' + str(format(p, ".3E")),
-#                     prop=dict(size=16), frameon=False, loc=7)
-# ax1_0.add_artist(at)
-# ax1_0.add_artist(test)
-#
-#
-# ax1_1 = plt.subplot(spec[3])
-# corr, p = stats.pearsonr(data_all.total_prcp_top, data_all.k_diff)
-# sns.scatterplot(x='total_prcp_top', y='k_diff', data=data_all,
-#                 ax=ax1_1)
-# ax1_1.set_xlabel('total solid prcp \n [mm/yr]')
-# ax1_1.set_ylabel('$k$ differences \n [yr$^{-1}$]')
-# ax1_1.xaxis.set_major_locator(plt.MaxNLocator(3))
-# at = AnchoredText('d', prop=dict(size=20), frameon=True, loc=2)
-# test = AnchoredText('$r_{s}$ = '+ str(np.around(corr,
-#                     decimals=3)) + '\np-value = ' + str(format(p, ".3E")),
-#                     prop=dict(size=16), frameon=False, loc=9)
-# ax1_1.add_artist(at)
-# ax1_1.add_artist(test)
-#
-# plt.tight_layout()
-# plt.savefig(os.path.join(plot_path, 'correlation_plot_diff.pdf'),
-#             bbox_inches='tight')

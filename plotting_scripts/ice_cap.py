@@ -117,8 +117,6 @@ rgb = colors.hsv_to_rgb(hsv)
 rgb[0,:] = 1
 cmap = colors.ListedColormap(rgb, name='velocity')
 
-
-
 dve_sel = dvel.salem.subset(grid=gdir.grid, margin=2)
 
 sub_mar = shape_cap.loc[shape_cap['TermType']=='1']

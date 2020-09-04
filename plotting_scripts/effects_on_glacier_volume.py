@@ -92,6 +92,7 @@ fari_ice_cap = consensus_ice_cap[['rgi_id',
                                   'vol_bsl_itmix_km3',
                                   'Huss_vol_km3',
                                   'Huss_vol_bsl_km3']]
+
 ########### Reading results with calving main volumes ########################
 output_dir_path = os.path.join(MAIN_PATH, 'output_data/9_summary_output/')
 

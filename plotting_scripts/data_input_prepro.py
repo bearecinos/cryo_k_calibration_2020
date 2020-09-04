@@ -113,8 +113,6 @@ fig1 = plt.figure(figsize=(19, 8), constrained_layout=True)
 # heights = [4, 2, 2]
 
 spec = gridspec.GridSpec(2, 4, wspace=0.4, hspace=0.05)
-                         #, wspace=0.4, hspace=0.2, width_ratios=widths,
-                         #height_ratios=heights)
 
 ax0 = fig1.add_subplot(spec[:, 0])
 sm = dvel.salem.get_map(countries=False)
@@ -184,18 +182,6 @@ sm.visualize(ax=ax1, cbar_title='SMB mean 61-90 (mm. w.e)')
 at = AnchoredText('f', prop=dict(size=14), frameon=True, loc=2)
 ax1.add_artist(at)
 
-# plt.tight_layout()
-# plt.savefig(os.path.join(cfg.PATHS['working_dir'],
-#                          'data_input_all_greenland.pdf'),
-#                             bbox_inches='tight')
-#
-# Plot fig 2
-# fig2 = plt.figure(figsize=(14, 14), constrained_layout=False)
-#
-# spec = gridspec.GridSpec(2, 2, wspace=0.6, hspace=0.05)
-
-# plt.tight_layout()
-# plt.show()
 plt.savefig(os.path.join(cfg.PATHS['working_dir'],
                          'data_input_plot_example.pdf'),
                             bbox_inches='tight')
