@@ -480,7 +480,6 @@ print('OGGM volume - bvsl vel', utils_vel.calculate_sea_level_equivalent(compare
 print('diff', utils_vel.calculate_sea_level_equivalent(compare1-compare2))
 
 
-exit()
 fig = plt.figure(figsize=(14, 8))
 sns.set(style="white", context="talk")
 
@@ -502,13 +501,15 @@ y_pos = [0,0.2,0.4,0.6,0.8]
 #print(len(y_pos))
 
 
-p0 = ax1.barh(y_pos, (ice_cap_vol_bsl_exp[8:13]+vol_bsl_exp[8:13])*-1, align='center', color=sns.xkcd_rgb["grey"],
-            height=0.2, edgecolor="white", hatch="/")
+p0 = ax1.barh(y_pos, (ice_cap_vol_bsl_exp[8:13]+vol_bsl_exp[8:13])*-1,
+              align='center', color=sns.xkcd_rgb["grey"],
+              height=0.2, edgecolor="white", hatch="/")
 
-p1 = ax1.barh(y_pos, vol_bsl_exp[8:13]*-1, align='center', color=sns.xkcd_rgb["grey"],
-            height=0.2, edgecolor="white")
+p1 = ax1.barh(y_pos, vol_bsl_exp[8:13]*-1, align='center',
+              color=sns.xkcd_rgb["grey"], height=0.2, edgecolor="white")
 
-p2 = ax1.barh(y_pos, vol_exp[8:13]+ice_cap_vol_exp[8:13], align='center', color=color_array, height=0.2, hatch="/")
+p2 = ax1.barh(y_pos, vol_exp[8:13]+ice_cap_vol_exp[8:13], align='center',
+              color=color_array, height=0.2, hatch="/")
 
 p3 = ax1.barh(y_pos, vol_exp[8:13], align='center', color=color_array, height=0.2)
 
