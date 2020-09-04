@@ -43,15 +43,24 @@ df_both = pd.read_csv(os.path.join(output_dir_path,
                       index_col='Unnamed: 0')
 
 print(df_both.columns)
-#df_both  = df_both.loc[df_both.k_value_MR != 0]
+df_both  = df_both.loc[df_both.k_value_MR != 0]
+df_both = df_both.loc[df_both.method == 'calibrated with velocities']
+
+#print(df_both.method.values)
+#exit()
 
 df_both['diff_q'] = (df_both['calving_flux_MV'] - df_both['calving_flux_MR']).abs()
 
 df_both['diff_k'] = (df_both['k_value_MV'] - df_both['k_value_MR']).abs()
 
-df_both  = df_both.loc[df_both.diff_k != 0]
+df_both = df_both.loc[df_both.diff_k != 0]
 
-#df_both = df_both.loc[df_both.k_value_MR !=0]
+df_both['calving_front_width'] = df_both['calving_front_width']*1e-3
+
+print(min(df_both['calving_front_width'].values))
+
+df_both.rename(columns={'calving_front_width': 'calving front width (km)'}, inplace=True)
+df_both.rename(columns={'rgi_area_km2': 'RGI Area (km)'}, inplace=True)
 
 # print(df_both.rgi_area_km2.sum() / 28515.391 * 100)
 # exit()
@@ -99,74 +108,201 @@ else:
     print('q - values are correlated (reject H0) p=%.3f' % p_pearson_q)
     print(p_pearson_k)
 
+
 #Now plotting
 import matplotlib.gridspec as gridspec
 
 color_palette = sns.color_palette("muted")
 
+# # Plot Fig 1
+# fig1 = plt.figure(figsize=(14, 18), constrained_layout=False)
+#
+# widths = [2, 2]
+# heights = [2, 4]
+#
+# spec = gridspec.GridSpec(2, 2, wspace=0.5, hspace=0.3, width_ratios=widths,
+#                          height_ratios=heights)
+#
+#
+# ax0 = plt.subplot(spec[0])
+# sns.scatterplot(x='k_value_MR', y='k_value_MV', size='calving front width (km)',
+#                 alpha=0.6, sizes=(100, 1000),
+#                 data=df_both, ax=ax0,
+#                 color=color_palette[0], legend='brief')
+#
+# ax0.plot([0, 2.5], [0, 2.5], c='grey', alpha=0.7)
+#
+# ax0.set_xlabel('$k_{RACMO}$ \n [yr$^{-1}$]')
+# ax0.set_ylabel('$k_{velo}$ \n [yr$^{-1}$]')
+# at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+# test = AnchoredText('$r_{s}$ = '+ str(format(r_kendal_k,
+#                     ".2f")) + '\np-value = ' + str(format(p_kendal_k,
+#                                                                 ".3E")),
+#                     prop=dict(size=18), frameon=False, loc=9)
+# handles, labels = ax0.get_legend_handles_labels()
+# ax0.legend(handles=handles[1:-1], labels=['0.1','15','30'], title='width [km]',
+#            scatterpoints=1, labelspacing=1.3, frameon=False, loc=4, fontsize=14,
+#            title_fontsize=15)
+# ax0.add_artist(at)
+# ax0.add_artist(test)
+#
+# ax1 = plt.subplot(spec[1])
+# sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', size='calving front width (km)',
+#                 alpha=0.6, sizes=(100, 1000),
+#                 data=df_both, ax=ax1,
+#                 color=color_palette[1], legend='brief')
+# ax1.plot([0, 0.3], [0, 0.3], c='grey', alpha=0.7)
+# ax1.set_xlabel('$q_{calving-RACMO}$ \n [$km^3$yr$^{-1}$]')
+# ax1.set_ylabel('$q_{calving-velo}$ \n [$km^3$yr$^{-1}$]')
+# at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+# test = AnchoredText('$r_{s}$ = '+ str(format(r_kendal_q,
+#                     ".2f")) + '\np-value = ' + str(format(r_kendal_q,
+#                                                                 ".3E")),
+#                     prop=dict(size=18), frameon=False, loc=1)
+# handles, labels = ax1.get_legend_handles_labels()
+#
+# ax1.legend(handles=handles[1:-1], labels=['0.1','15','30'], title='width [km]',
+#            scatterpoints=1, labelspacing=1.3, frameon=False, loc=4, fontsize=14,
+#            title_fontsize=15)
+# ax1.add_artist(at)
+# ax1.add_artist(test)
+#
+# ax2 = plt.subplot(spec[2])
+# sm = ds_geo.salem.get_map(countries=False)
+# #sm.set_shapefile(oceans=True)
+# sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
+# xx, yy = sm.grid.transform(lon, lat)
+#
+# ax2.scatter(xx, yy, 1000*diff_k, alpha=0.6, color=color_palette[0],
+#                                         edgecolor=color_palette[0])
+#
+# # make legend with dummy points
+# for a in [0.1, 0.5, 1.0]:
+#     ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=1000*a,
+#                 label=str(a))
+# ax2.legend(scatterpoints=1, frameon=False,
+#            labelspacing=1.5, loc='center', fontsize=14,
+#            title='$k$ differences [yr$^{-1}$]',
+#            title_fontsize=14);
+# sm.set_scale_bar(location=(0.17, 0.02))
+# sm.visualize(ax=ax2)
+# at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
+# ax2.add_artist(at)
+#
+# ax3 = plt.subplot(spec[3])
+# sm = ds_geo.salem.get_map(countries=False)
+# #sm.set_shapefile(oceans=True)
+# sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
+# xx, yy = sm.grid.transform(lon, lat)
+#
+# ax3.scatter(xx, yy, 2000*diff_q, alpha=0.5, color=color_palette[1],
+#                                         edgecolor=color_palette[1])
+#
+# # make legend with dummy points + '[yr$^{-1}$]' + '[km$^{3}$yr$^{-1}$]'
+# for a in [0.05, 0.1, 0.5]:
+#     ax3.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=2000*a,
+#                 label=str(a))
+# ax3.legend(scatterpoints=1, frameon=False,
+#            labelspacing=1.5, loc='center', fontsize=14,
+#            title='$q_{calving}$ differences \n [km$^{3}$yr$^{-1}$]',
+#            title_fontsize=14);
+# sm.visualize(ax=ax3)
+# at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
+# ax3.add_artist(at)
+#
+# plt.tight_layout()
+# #plt.show()
+# # plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
+# #              bbox_inches='tight')
+# plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+#                 bbox_inches='tight')
+#
+#
+#
+# fig, ax = plt.subplots()
+# sns.scatterplot(x='RGI Area (km)', y='calving front width (km)',
+#                 data=df_both, ax=ax, alpha=0.7,
+#                 color=color_palette[4])
+# ax.plot([0, 1000], [0, 30], c='grey', alpha=0.7)
+# plt.savefig(os.path.join(plot_path, 'rgi_areavswidth.png'),
+#                 bbox_inches='tight')
+
 # Plot Fig 1
-fig1 = plt.figure(figsize=(14, 16), constrained_layout=False)
+fig3 = plt.figure(figsize=(18, 9), constrained_layout=True)
 
-widths = [2, 2]
-heights = [2, 4]
+widths = [3, 4, 4]
+heights = [3, 3]
 
-spec = gridspec.GridSpec(2, 2, wspace=0.5, hspace=0.3, width_ratios=widths,
-                         height_ratios=heights)
+gs = fig3.add_gridspec(2, 3, wspace=0.01, hspace=0.1, width_ratios=widths, height_ratios=heights)
 
+ax0 = fig3.add_subplot(gs[0, 0])
 
-ax0 = plt.subplot(spec[0])
-sns.scatterplot(x='k_value_MR', y='k_value_MV', data=df_both, ax=ax0,
-                color=color_palette[0])
+sns.scatterplot(x='k_value_MR', y='k_value_MV', size='calving front width (km)',
+                alpha=0.6, sizes=(100, 1000),
+                data=df_both, ax=ax0,
+                color=color_palette[0], legend='brief')
 
 ax0.plot([0, 2.5], [0, 2.5], c='grey', alpha=0.7)
 
-ax0.set_xlabel('$k_{RACMO}$ \n [yr$^{-1}$]')
-ax0.set_ylabel('$k_{velo}$ \n [yr$^{-1}$]')
+ax0.set_xlabel('$k_{RACMO}$ [yr$^{-1}$]')
+ax0.set_ylabel('$k_{velo}$ [yr$^{-1}$]')
 at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
-test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_k,
-                    ".2f")) + '\np-value = ' + str(format(p_pearson_k,
+test = AnchoredText('$r_{s}$ = '+ str(format(r_kendal_k,
+                    ".2f")) + '\np-value = ' + str(format(p_kendal_k,
                                                                 ".3E")),
-                    prop=dict(size=18), frameon=False, loc=4)
+                    prop=dict(size=18), frameon=False, loc=9)
+handles, labels = ax0.get_legend_handles_labels()
+ax0.legend(handles=handles[1:-1], labels=['0.1','15','30'], title='width [km]',
+           scatterpoints=1, labelspacing=1.3, frameon=False, loc=4, fontsize=14,
+           title_fontsize=15)
 ax0.add_artist(at)
 ax0.add_artist(test)
 
-ax1 = plt.subplot(spec[1])
-sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', data=df_both, ax=ax1,
-                color=color_palette[1])
+ax1 = fig3.add_subplot(gs[1, 0])
+sns.scatterplot(x='calving_flux_MR', y='calving_flux_MV', size='calving front width (km)',
+                alpha=0.6, sizes=(100, 1000),
+                data=df_both, ax=ax1,
+                color=color_palette[1], legend='brief')
 ax1.plot([0, 0.3], [0, 0.3], c='grey', alpha=0.7)
-ax1.set_xlabel('$q_{calving-RACMO}$ \n [$km^3$yr$^{-1}$]')
-ax1.set_ylabel('$q_{calving-velo}$ \n [$km^3$yr$^{-1}$]')
+ax1.set_xlabel('$q_{calving-RACMO}$ [$km^3$yr$^{-1}$]')
+ax1.set_ylabel('$q_{calving-velo}$ [$km^3$yr$^{-1}$]')
 at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
-test = AnchoredText('$r_{s}$ = '+ str(format(r_pearson_q,
-                    ".2f")) + '\np-value = ' + str(format(p_pearson_q,
+test = AnchoredText('$r_{s}$ = '+ str(format(r_kendal_q,
+                    ".2f")) + '\np-value = ' + str(format(r_kendal_q,
                                                                 ".3E")),
                     prop=dict(size=18), frameon=False, loc=1)
+handles, labels = ax1.get_legend_handles_labels()
+
+ax1.legend(handles=handles[1:-1], labels=['0.1','15','30'], title='width [km]',
+           scatterpoints=1, labelspacing=1.3, frameon=False, loc=4, fontsize=14,
+           title_fontsize=15)
 ax1.add_artist(at)
 ax1.add_artist(test)
 
-ax2 = plt.subplot(spec[2])
+ax2 = fig3.add_subplot(gs[:, 1])
+
 sm = ds_geo.salem.get_map(countries=False)
 #sm.set_shapefile(oceans=True)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
 xx, yy = sm.grid.transform(lon, lat)
 
-ax2.scatter(xx, yy, 60**diff_k, alpha=0.6, color=color_palette[0],
+ax2.scatter(xx, yy, 1000*diff_k, alpha=0.6, color=color_palette[0],
                                         edgecolor=color_palette[0])
 
 # make legend with dummy points
-for a in [0.5, 1.0, 1.5]:
-    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=60**a,
-                label=str(a) + 'yr$^{-1}$')
+for a in [0.1, 0.5, 1.0]:
+    ax2.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=1000*a,
+                label=str(a))
 ax2.legend(scatterpoints=1, frameon=False,
-           labelspacing=1, loc='center', fontsize=14,
-           title='$k$ differences',
+           labelspacing=1.5, loc='center', fontsize=14,
+           title='$k$ differences [yr$^{-1}$]',
            title_fontsize=14);
 sm.set_scale_bar(location=(0.17, 0.02))
 sm.visualize(ax=ax2)
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
 ax2.add_artist(at)
 
-ax3 = plt.subplot(spec[3])
+ax3 = fig3.add_subplot(gs[:, -1])
 sm = ds_geo.salem.get_map(countries=False)
 #sm.set_shapefile(oceans=True)
 sm.set_shapefile(coast_line, countries=True, linewidth=1.0, alpha=0.8)
@@ -175,13 +311,13 @@ xx, yy = sm.grid.transform(lon, lat)
 ax3.scatter(xx, yy, 2000*diff_q, alpha=0.5, color=color_palette[1],
                                         edgecolor=color_palette[1])
 
-# make legend with dummy points
+# make legend with dummy points + '[yr$^{-1}$]' + '[km$^{3}$yr$^{-1}$]'
 for a in [0.05, 0.1, 0.5]:
     ax3.scatter([], [], c=sns.xkcd_rgb["grey"], alpha=0.5, s=2000*a,
-                label=str(a) + 'km$^{3}$yr$^{-1}$')
+                label=str(a))
 ax3.legend(scatterpoints=1, frameon=False,
            labelspacing=1.5, loc='center', fontsize=14,
-           title='$q_{calving}$ differences',
+           title='$q_{calving}$ differences \n [km$^{3}$yr$^{-1}$]',
            title_fontsize=14);
 sm.visualize(ax=ax3)
 at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
@@ -191,5 +327,6 @@ plt.tight_layout()
 #plt.show()
 # plt.savefig(os.path.join(plot_path, 'k_values_fa_result.jpg'),
 #              bbox_inches='tight')
-plt.savefig(os.path.join(plot_path, 'k_values_fa_result.png'),
-              bbox_inches='tight')
+plt.savefig(os.path.join(plot_path, 'k_values_fa_result.pdf'),
+                bbox_inches='tight')
+

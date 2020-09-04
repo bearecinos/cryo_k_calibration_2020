@@ -1030,8 +1030,9 @@ def calculate_PDM(gdir):
     # Year range
     yr = [tstar - mu_hp, tstar + mu_hp]
 
-    #Then the heights
-    heights = gdir.get_inversion_flowline_hw()[0]
+    # Then the heights and widths
+    heights, widths = gdir.get_inversion_flowline_hw()
+    arrays = [heights, widths]
 
     #Then the climate data
     ds = xr.open_dataset(gdir.get_filepath('climate_monthly'))
@@ -1062,15 +1063,16 @@ def calculate_PDM(gdir):
 
     data_temp = pd.DataFrame(temp2d,
                              columns=[df.index],
-                             index=heights)
+                             index=arrays)
     data_prcp = pd.DataFrame(prcpsol,
                              columns=[df.index],
-                             index=heights)
+                             index=arrays)
 
     temp_free_board = data_temp.iloc[-1]
-    solid_prcp_top = data_prcp.iloc[0].sum()
-
     PDM_temp = temp_free_board[temp_free_board > 0].sum()
     PDM_number = temp_free_board[temp_free_board > 0].count()
 
-    return PDM_temp, PDM_number, solid_prcp_top
+    solid_prcp_per_month = np.average(data_prcp, axis=0, weights=widths)
+    total_solid_prcp_per_year = solid_prcp_per_month.sum()/31
+
+    return PDM_temp, PDM_number, total_solid_prcp_per_year

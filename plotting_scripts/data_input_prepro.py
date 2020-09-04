@@ -20,9 +20,9 @@ sys.path.append(MAIN_PATH)
 from velocity_tools import utils_velocity as utils_vel
 
 # PARAMS for plots
-rcParams['axes.labelsize'] = 18
-rcParams['xtick.labelsize'] = 18
-rcParams['ytick.labelsize'] = 18
+rcParams['axes.labelsize'] = 12
+rcParams['xtick.labelsize'] = 12
+rcParams['ytick.labelsize'] = 12
 #rcParams['legend.fontsize'] = 12
 sns.set_context('poster')
 
@@ -107,15 +107,16 @@ smb_avg_sel = ds_smb_time_sel.SMB_rec.mean(dim='time', skipna=True).compute()
 import matplotlib.gridspec as gridspec
 
 # Plot Fig 1
-fig1 = plt.figure(figsize=(12, 14), constrained_layout=True)
+fig1 = plt.figure(figsize=(19, 8), constrained_layout=True)
 
-widths = [2, 2]
-heights = [4, 2, 2]
+# widths = [2, 2]
+# heights = [4, 2, 2]
 
-spec = gridspec.GridSpec(3, 2, wspace=0.4, hspace=0.2, width_ratios=widths,
-                         height_ratios=heights)
+spec = gridspec.GridSpec(2, 4, wspace=0.4, hspace=0.05)
+                         #, wspace=0.4, hspace=0.2, width_ratios=widths,
+                         #height_ratios=heights)
 
-ax0 = plt.subplot(spec[0])
+ax0 = fig1.add_subplot(spec[:, 0])
 sm = dvel.salem.get_map(countries=False)
 sm.set_shapefile(oceans=True)
 sm.set_data(dvel.data)
@@ -124,12 +125,49 @@ x_conect, y_conect = sm.grid.transform(gdir.cenlon, gdir.cenlat)
 ax0.scatter(x_conect, y_conect, s=80, marker="o", color='red')
 ax0.text(x_conect, y_conect, s = gdir.rgi_id,
          color=sns.xkcd_rgb["white"],
-         weight = 'black', fontsize=14)
+         weight = 'black', fontsize=12)
 sm.visualize(ax=ax0, cbar_title='Velocity m/yr')
-at = AnchoredText('a', prop=dict(size=18), frameon=True, loc=2)
+at = AnchoredText('a', prop=dict(size=14), frameon=True, loc=2)
 ax0.add_artist(at)
 
-ax1 = plt.subplot(spec[1])
+llkw = {'interval': 1}
+ax2 = fig1.add_subplot(spec[0, 1])
+graphics.plot_centerlines(gdirs[0], ax=ax2, title='', add_colorbar=True,
+                          lonlat_contours_kwargs=llkw, add_scalebar=False)
+at = AnchoredText('b', prop=dict(size=10), frameon=True, loc=2)
+ax2.add_artist(at)
+
+ax3 = fig1.add_subplot(spec[0, 2])
+graphics.plot_catchment_width(gdirs[0], ax=ax3, title='', corrected=True,
+                              lonlat_contours_kwargs=llkw,
+                              add_colorbar=False, add_scalebar=False)
+at = AnchoredText('d', prop=dict(size=14), frameon=True, loc=2)
+ax3.add_artist(at)
+
+ax4 = fig1.add_subplot(spec[1, 1])
+sm = dvel_sel.salem.get_map(countries=False)
+sm.set_shapefile(gdir.read_shapefile('outlines'))
+sm.set_shapefile(shp, color='r')
+sm.set_data(dvel_sel.data)
+sm.set_cmap('viridis')
+sm.set_lonlat_contours(interval=1)
+sm.visualize(ax=ax4, addcbar=False)
+at = AnchoredText('c', prop=dict(size=10), frameon=True, loc=2)
+ax4.add_artist(at)
+
+ax5 = fig1.add_subplot(spec[1, 2])
+sm = ds_sel.salem.get_map(countries=False)
+sm.set_shapefile(gdir.read_shapefile('outlines'))
+sm.set_shapefile(shp, color='r')
+sm.set_data(smb_avg_sel)
+sm.set_cmap('RdBu')
+sm.set_scale_bar(location=(0.76, 0.04))
+sm.set_lonlat_contours(interval=1)
+sm.visualize(ax=ax5, addcbar=False)
+at = AnchoredText('e', prop=dict(size=14), frameon=True, loc=2)
+ax5.add_artist(at)
+
+ax1 = fig1.add_subplot(spec[:, -1])
 sm = ds_smb.salem.get_map(countries=False)
 sm.set_shapefile(oceans=True)
 sm.set_data(avg)
@@ -138,10 +176,12 @@ x_conect, y_conect = sm.grid.transform(gdir.cenlon, gdir.cenlat)
 ax1.scatter(x_conect, y_conect, s=80, marker="o", color='red')
 ax1.text(x_conect, y_conect, s = gdir.rgi_id,
          color=sns.xkcd_rgb["black"],
-         weight = 'black', fontsize=14)
-sm.set_scale_bar(location=(0.78, 0.04))
-sm.visualize(ax=ax1,  cbar_title='SMB mean 61-90 (mm. w.e)')
-at = AnchoredText('b', prop=dict(size=18), frameon=True, loc=2)
+         weight = 'black', fontsize=10)
+#sm.set_scale_bar(location=(0.78, 0.04))
+sm.set_vmin(-200)
+sm.set_vmax(200)
+sm.visualize(ax=ax1, cbar_title='SMB mean 61-90 (mm. w.e)')
+at = AnchoredText('f', prop=dict(size=14), frameon=True, loc=2)
 ax1.add_artist(at)
 
 # plt.tight_layout()
@@ -154,46 +194,8 @@ ax1.add_artist(at)
 #
 # spec = gridspec.GridSpec(2, 2, wspace=0.6, hspace=0.05)
 
-llkw = {'interval': 1}
-
-ax2 = plt.subplot(spec[2])
-graphics.plot_centerlines(gdirs[0], ax=ax2, title='', add_colorbar=True,
-                          lonlat_contours_kwargs=llkw, add_scalebar=False)
-at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
-ax2.add_artist(at)
-
-ax3 = plt.subplot(spec[3])
-graphics.plot_catchment_width(gdirs[0], ax=ax3, title='', corrected=True,
-                              lonlat_contours_kwargs=llkw,
-                              add_colorbar=False, add_scalebar=False)
-at = AnchoredText('d', prop=dict(size=18), frameon=True, loc=2)
-ax3.add_artist(at)
-
-
-ax4 = plt.subplot(spec[4])
-sm = dvel_sel.salem.get_map(countries=False)
-sm.set_shapefile(gdir.read_shapefile('outlines'))
-sm.set_shapefile(shp, color='r')
-sm.set_data(dvel_sel.data)
-sm.set_cmap('viridis')
-sm.set_lonlat_contours(interval=1)
-sm.visualize(ax=ax4, cbar_title='Velocity m/yr')
-at = AnchoredText('e', prop=dict(size=18), frameon=True, loc=2)
-ax4.add_artist(at)
-
-ax5 = plt.subplot(spec[5])
-sm = ds_sel.salem.get_map(countries=False)
-sm.set_shapefile(gdir.read_shapefile('outlines'))
-sm.set_shapefile(shp, color='r')
-sm.set_data(smb_avg_sel)
-sm.set_cmap('RdBu')
-sm.set_scale_bar(location=(0.78, 0.04))
-sm.set_lonlat_contours(interval=1)
-sm.visualize(ax=ax5,  cbar_title='SMB mean 61-90 (mm. w.e)')
-at = AnchoredText('f', prop=dict(size=18), frameon=True, loc=2)
-ax5.add_artist(at)
-
-plt.tight_layout()
+# plt.tight_layout()
+# plt.show()
 plt.savefig(os.path.join(cfg.PATHS['working_dir'],
-                         'data_input_plot_all.pdf'),
+                         'data_input_plot_example.pdf'),
                             bbox_inches='tight')

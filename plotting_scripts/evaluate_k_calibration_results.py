@@ -100,6 +100,7 @@ racmo_result_path = os.path.join(MAIN_PATH,
 'output_data/6_racmo_calibration_results/k_calibration_racmo_reltol_q_calving_RACMO_meanNone_.csv')
 
 df_racmo_result = pd.read_csv(racmo_result_path, index_col='Unnamed: 0')
+df_racmo_result = df_racmo_result.loc[df_racmo_result.racmo_flux > 0]
 
 ################## racmo result to plot with vel observations ################
 df_to_plot = pd.merge(left=df_racmo_result,
@@ -108,7 +109,7 @@ df_to_plot = pd.merge(left=df_racmo_result,
                     left_on = 'RGIId',
                     right_on='RGIId')
 
-df_to_plot = df_to_plot.loc[df_to_plot.racmo_flux > 0]
+#df_to_plot = df_to_plot.loc[df_to_plot.racmo_flux > 0]
 
 nan_value = float("NaN")
 
@@ -118,27 +119,27 @@ df_to_plot.dropna(subset =["u_obs"], inplace=True)
 ##############################################################################
 
 
-df_racmo_negative = df_racmo_result.loc[df_racmo_result.racmo_flux < 0]
+#df_racmo_negative = df_racmo_result.loc[df_racmo_result.racmo_flux < 0]
 
 ids = df_racmo_result.RGIId.values
 keep_ids = [(i in ids) for i in rgidf.RGIId]
 rgidf_racmo_result = rgidf.iloc[keep_ids]
-
+#
 area_with_cal_result_racmo = rgidf_racmo_result.Area.sum()
-
+#
 print('Area % coverage where we find a k value with racmo data',
-      area_with_cal_result_racmo / study_area * 100)
-
-ids_negative = df_racmo_negative.RGIId.values
-keep_ids_negative = [(i in ids_negative) for i in rgidf.RGIId]
-rgidf_racmo_negative = rgidf.iloc[keep_ids_negative]
-
-area_racmo_negative = rgidf_racmo_negative.Area.sum()
-
-print('Area % coverage where racmo data is negative',
-      area_racmo_negative/ study_area * 100)
-
-negative_percet = np.round(area_racmo_negative/ study_area * 100)
+       area_with_cal_result_racmo / study_area * 100)
+#
+# ids_negative = df_racmo_negative.RGIId.values
+# keep_ids_negative = [(i in ids_negative) for i in rgidf.RGIId]
+# rgidf_racmo_negative = rgidf.iloc[keep_ids_negative]
+#
+# area_racmo_negative = rgidf_racmo_negative.Area.sum()
+#
+# print('Area % coverage where racmo data is negative',
+#       area_racmo_negative/ study_area * 100)
+#
+# negative_percet = np.round(area_racmo_negative/ study_area * 100)
 ##############################################################################
 
 RMSD = utils.rmsd(df_vel_result.u_obs, df_vel_result.u_surf)
@@ -214,9 +215,9 @@ test_racmo = AnchoredText(' Area % = '+ str(format(Num_r, ".2f")) +
                     '\n Bias = ' + str(format(mean_dev_racmo, ".4f")) + ' $km^{3}yr^{-1}$',
                     prop=dict(size=16), frameon=True, loc=1)
 
-negative_area = AnchoredText('Area % = \n ' + str(format(negative_percet, ".2f")),
-                             prop=dict(size=13, color='r', fontweight="bold"),
-                             frameon=False, loc=6)
+# negative_area = AnchoredText('Area % = \n ' + str(format(negative_percet, ".2f")),
+#                              prop=dict(size=13, color='r', fontweight="bold"),
+#                              frameon=False, loc=6)
 
 
 
@@ -264,7 +265,7 @@ test_racmo_obs = AnchoredText(' Area % = '+ str(format(Num_racmo_obs, ".2f")) +
                     '\n Bias = ' + str(format(mean_dev_racmo_obs, ".2f")) + ' m$yr^{-1}$',
                     prop=dict(size=16), frameon=True, loc=1)
 
-z_racmo_obs = np.arange(0, len(df_to_plot)+20, 1)
+z_racmo_obs = np.arange(0, len(df_vel_result), 1)
 zline_racmo_obs = slope_racmo_obs*z_racmo_obs+intercept_racmo_obs
 
 wline_racmo_obs = 1*z_racmo_obs+0
@@ -286,27 +287,12 @@ ax0.plot(z, zline)
 ax0.plot(z, wline, color='grey')
 ax0.set_xlabel('Observed surface velocities \n [m $yr^{-1}$]')
 ax0.set_ylabel('OGGM surface velocities')
+#ax0.set_xlim(0, 400)
 at = AnchoredText('a', prop=dict(size=14), frameon=True, loc=2)
 ax0.add_artist(at)
 ax0.add_artist(test)
 
-
-
-ax1 = plt.subplot(spec[1])
-ax1.errorbar(df_racmo_result.racmo_flux, df_racmo_result.calving_flux,
-            xerr=None, fmt='o', alpha=0.5,
-            color=color_palette[1])
-ax1.plot(x_r, line_r, color=color_palette[1])
-ax1.plot(x_r, line_w, color='grey')
-ax1.axvline(0, color='k', linestyle='--')
-ax1.set_xlabel('RACMO frontal ablation \n [$km^{3}$$yr^{-1}$]')
-ax1.set_ylabel('OGGM frontal ablation')
-at = AnchoredText('b', prop=dict(size=14), frameon=True, loc=2)
-ax1.add_artist(at)
-ax1.add_artist(test_racmo)
-ax1.add_artist(negative_area)
-
-ax2 = plt.subplot(spec[2])
+ax2 = plt.subplot(spec[1])
 ax2.errorbar(df_to_plot.u_obs, df_to_plot.u_surf, xerr=df_to_plot.error,
              fmt='o', alpha=0.7, color=color_palette[1],
              ecolor=sns.xkcd_rgb["light grey"], elinewidth=1.5)
@@ -315,9 +301,26 @@ ax2.plot(z_racmo_obs, wline_racmo_obs, color='grey')
 
 ax2.set_xlabel('Observed surface velocities \n [m $yr^{-1}$]')
 ax2.set_ylabel('OGGM surface velocities')
-at = AnchoredText('c', prop=dict(size=14), frameon=True, loc=2)
+#ax2.set_xlim(0, 400)
+at = AnchoredText('b', prop=dict(size=14), frameon=True, loc=2)
 ax2.add_artist(at)
 ax2.add_artist(test_racmo_obs)
+
+
+ax1 = plt.subplot(spec[2])
+ax1.errorbar(df_racmo_result.racmo_flux, df_racmo_result.calving_flux,
+            xerr=None, fmt='o', alpha=0.5,
+            color=color_palette[1])
+ax1.plot(x_r, line_r, color=color_palette[1])
+ax1.plot(x_r, line_w, color='grey')
+#ax1.axvline(0, color='k', linestyle='--')
+ax1.set_xlabel('RACMO frontal ablation \n [$km^{3}$$yr^{-1}$]')
+ax1.set_ylabel('OGGM frontal ablation')
+#ax1.set_xlim(0, 0.07)
+at = AnchoredText('c', prop=dict(size=14), frameon=True, loc=2)
+ax1.add_artist(at)
+ax1.add_artist(test_racmo)
+#ax1.add_artist(negative_area)
 
 plt.tight_layout()
 #plt.show()
