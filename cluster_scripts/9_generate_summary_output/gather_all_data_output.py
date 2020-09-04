@@ -24,7 +24,7 @@ full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration',
            '9_summary_output', '11_climate_stats', '12_volume_vsl',
-           '13_non_calving'}
+           '13_non_calving', '14_ice_cap_prepo'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -227,7 +227,8 @@ glac_stats_vel_plus_filtered = glac_stats_vel_plus[['rgi_id',
                                                     'u_surf_MV',
                                                     'u_obs',
                                                     'rtol',
-                                                    'No of k']]
+                                                    'No of k',
+                                                    'method']]
 
 df_common = pd.merge(left=glac_stats_racmo_plus_filtered,
                     right=glac_stats_vel_plus_filtered,

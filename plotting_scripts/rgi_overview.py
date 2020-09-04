@@ -40,8 +40,6 @@ mask_file = os.path.join(MAIN_PATH,
 filename_coastline = os.path.join(MAIN_PATH,
                         'input_data/ne_10m_coastline/ne_10m_coastline.shp')
 
-rgi_original_path = '/home/bea/Documents/global_data_base/05_rgi61_GreenlandPeriphery/05_rgi61_GreenlandPeriphery.shp'
-
 #Reading RACMO mask
 # The mask and geo reference data
 ds_geo = xr.open_dataset(mask_file, decode_times=False)
@@ -78,9 +76,12 @@ area_mar['Area (% of all Alaska)'] = area_mar['Area'] / area_per_reg.Area.sum() 
 category = ['Land-terminating',
             'Tidewater strongly connected',
             'Tidewater weakly connected']
-area = [area_per_reg.Area[0], area_mar.Area[2], area_mar.Area[0] + area_mar.Area[1]]
-area_percent = area / df.Area.sum() * 100
 
+area = [area_per_reg.Area[0],
+        area_mar.Area[2],
+        area_mar.Area[0] + area_mar.Area[1]]
+
+area_percent = area / df.Area.sum() * 100
 
 d = {'Category': category,
      'Area (km²)': area,
@@ -95,8 +96,8 @@ output_dir_path = os.path.join(MAIN_PATH, 'output_data/')
 full_exp_dir = []
 
 exclude = {'10_plot', '4_k_exp_for_calibration', '7_calving_vel_calibrated',
-           '8_calving_racmo_calibrated',
-           '11_climate_stats', '12_volume_vsl', '13_non_calving', '14_ice_cap_prepo'}
+           '8_calving_racmo_calibrated', '11_climate_stats', '12_volume_vsl',
+           '13_non_calving', '14_ice_cap_prepo'}
 
 for path, subdirs, files in os.walk(output_dir_path, topdown=True):
     subdirs[:] = [d for d in subdirs if d not in exclude]
@@ -215,11 +216,14 @@ Tidewater_no_connected = ds['Area (% of Greenland)'][2]
 bars = np.add(Land_area, Tidewater_connected).tolist()
 
 
-p1 = ax1.bar(ind, Land_area, width, color=sns.xkcd_rgb["grey"], label='Land-terminating')
+p1 = ax1.bar(ind, Land_area, width,
+             color=sns.xkcd_rgb["grey"], label='Land-terminating')
 p2 = ax1.bar(ind, Tidewater_connected, width, bottom=Land_area,
-             color=sns.xkcd_rgb["navy blue"], label='Tidewater connectivity level 2')
+             color=sns.xkcd_rgb["navy blue"],
+             label='Tidewater connectivity level 2')
 p3 = ax1.bar(ind, Tidewater_no_connected, width, bottom=bars,
-             color=sns.xkcd_rgb["medium blue"], label='Tidewater connectivity level 0,1 (study area)')
+             color=sns.xkcd_rgb["medium blue"],
+             label='Tidewater connectivity level 0,1 (study area)')
 
 ax1.set_ylabel('Area (% of Greenland PGs)')
 #ax1.set_ylim(0, 100)
@@ -271,13 +275,7 @@ p3 = ax2.bar(ind, no_vel_area, width, bottom=bars2, color=palette[3])
 
 p4 = ax2.bar(ind, no_racmo_area, width, bottom=bars3, color=palette[4])
 
-
-
 ax2.set_ylabel('Area (% of study area)')
-
-#ax2.set_yticks(ax1.get_yticks())
-#ax2.set_ylim(0, 100)
-
 ax2.set_xticks(ind)
 ax2.set_xticklabels(['2'])
 
@@ -289,13 +287,6 @@ lgd = ax2.legend((p5[0], p1[0], p2[0], p3[0], p4[0]),
             'Without RACMO data'),#, frameon=True,
             loc='lower right', bbox_to_anchor=(2.6, 0.0), fontsize=18)
 
-#ax2.get_legend().remove()
-
-# handles_2, labels_2 = ax2.get_legend_handles_labels()
-# fig.legend(handles_2, labels_2, frameon=True,
-#            bbox_to_anchor= (5, 0.0), loc='lower right',
-#            fontsize=18)
-          # facecolor='white', fancybox=False, fontsize=18)
 at = AnchoredText('c', prop=dict(size=18), frameon=True, loc=2)
 ax2.add_artist(at)
 ax2.add_artist(lgd)
@@ -304,5 +295,3 @@ plt.tight_layout()
 #plt.show()
 plt.savefig(os.path.join(plot_path, 'rgi_overview_test.png'),
             bbox_inches='tight', pad_inches=0.25)
-
-#bbox_extra_artists=(lgd,),
